@@ -1,0 +1,176 @@
+{
+	"info": {
+		"name": "Sweet Medical",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:3000"
+		}
+	],
+	"item": [
+		{
+			"name": "Health Check",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/health",
+					"host": ["{{baseUrl}}"],
+					"path": ["health"]
+				}
+			}
+		},
+		{
+			"name": "Turnos",
+			"item": [
+				{
+					"name": "Alta de Turno",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/turnos",
+							"host": ["{{baseUrl}}"],
+							"path": ["turnos"]
+						},
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"medicoId\": 1,\n    \"paciente\": 12,\n    \"fechaHora\": \"2026-04-20T10:30:00\",\n    \"sede\": \"CENTRAL\",\n    \"practica\": \"CONSULTA\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						}
+					}
+				},
+				{
+					"name": "Baja de Turno",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/turnos/1",
+							"host": ["{{baseUrl}}"],
+							"path": ["turnos", "1"]
+						},
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"motivo\": \"No puedo asistir\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Medicos",
+			"item": [
+				{
+					"name": "Obtener Disponibilidades",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/medicos/1/disponibilidades",
+							"host": ["{{baseUrl}}"],
+							"path": ["medicos", "1", "disponibilidades"]
+						}
+					}
+				},
+				{
+					"name": "Obtener Disponibilidad por ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/medicos/1/disponibilidades/1",
+							"host": ["{{baseUrl}}"],
+							"path": ["medicos", "1", "disponibilidades", "1"]
+						}
+					}
+				},
+				{
+					"name": "Crear Disponibilidad",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/medicos/1/disponibilidades",
+							"host": ["{{baseUrl}}"],
+							"path": ["medicos", "1", "disponibilidades"]
+						},
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"nuevaDisponibilidad\": {\n        \"diaSemana\": \"LUNES\",\n        \"horaInicio\": \"09:00\",\n        \"horaFin\": \"13:00\"\n    }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						}
+					}
+				},
+				{
+					"name": "Editar Disponibilidad",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/medicos/1/disponibilidades/1",
+							"host": ["{{baseUrl}}"],
+							"path": ["medicos", "1", "disponibilidades", "1"]
+						},
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"nuevaDisponibilidad\": {\n        \"diaSemana\": \"LUNES\",\n        \"horaInicio\": \"09:00\",\n        \"horaFin\": \"13:00\"\n    }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						}
+					}
+				},
+				{
+					"name": "Eliminar Disponibilidad",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/medicos/1/disponibilidades/1",
+							"host": ["{{baseUrl}}"],
+							"path": ["medicos", "1", "disponibilidades", "1"]
+						}
+					}
+				}
+			]
+		}
+	]
+}

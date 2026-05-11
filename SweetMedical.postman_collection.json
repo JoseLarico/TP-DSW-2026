@@ -1,176 +1,1524 @@
 {
-	"info": {
-		"name": "Sweet Medical",
-		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
-	},
-	"variable": [
-		{
-			"key": "baseUrl",
-			"value": "http://localhost:3000"
-		}
-	],
-	"item": [
-		{
-			"name": "Health Check",
-			"request": {
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": "{{baseUrl}}/health",
-					"host": ["{{baseUrl}}"],
-					"path": ["health"]
-				}
-			}
-		},
-		{
-			"name": "Turnos",
-			"item": [
-				{
-					"name": "Alta de Turno",
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							}
-						],
-						"url": {
-							"raw": "{{baseUrl}}/turnos",
-							"host": ["{{baseUrl}}"],
-							"path": ["turnos"]
-						},
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"medicoId\": 1,\n    \"paciente\": 12,\n    \"fechaHora\": \"2026-04-20T10:30:00\",\n    \"sede\": \"CENTRAL\",\n    \"practica\": \"CONSULTA\"\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						}
-					}
-				},
-				{
-					"name": "Baja de Turno",
-					"request": {
-						"method": "DELETE",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							}
-						],
-						"url": {
-							"raw": "{{baseUrl}}/turnos/1",
-							"host": ["{{baseUrl}}"],
-							"path": ["turnos", "1"]
-						},
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"motivo\": \"No puedo asistir\"\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						}
-					}
-				}
-			]
-		},
-		{
-			"name": "Medicos",
-			"item": [
-				{
-					"name": "Obtener Disponibilidades",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{baseUrl}}/medicos/1/disponibilidades",
-							"host": ["{{baseUrl}}"],
-							"path": ["medicos", "1", "disponibilidades"]
-						}
-					}
-				},
-				{
-					"name": "Obtener Disponibilidad por ID",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{baseUrl}}/medicos/1/disponibilidades/1",
-							"host": ["{{baseUrl}}"],
-							"path": ["medicos", "1", "disponibilidades", "1"]
-						}
-					}
-				},
-				{
-					"name": "Crear Disponibilidad",
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							}
-						],
-						"url": {
-							"raw": "{{baseUrl}}/medicos/1/disponibilidades",
-							"host": ["{{baseUrl}}"],
-							"path": ["medicos", "1", "disponibilidades"]
-						},
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"nuevaDisponibilidad\": {\n        \"diaSemana\": \"LUNES\",\n        \"horaInicio\": \"09:00\",\n        \"horaFin\": \"13:00\"\n    }\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						}
-					}
-				},
-				{
-					"name": "Editar Disponibilidad",
-					"request": {
-						"method": "PUT",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							}
-						],
-						"url": {
-							"raw": "{{baseUrl}}/medicos/1/disponibilidades/1",
-							"host": ["{{baseUrl}}"],
-							"path": ["medicos", "1", "disponibilidades", "1"]
-						},
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"nuevaDisponibilidad\": {\n        \"diaSemana\": \"LUNES\",\n        \"horaInicio\": \"09:00\",\n        \"horaFin\": \"13:00\"\n    }\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						}
-					}
-				},
-				{
-					"name": "Eliminar Disponibilidad",
-					"request": {
-						"method": "DELETE",
-						"header": [],
-						"url": {
-							"raw": "{{baseUrl}}/medicos/1/disponibilidades/1",
-							"host": ["{{baseUrl}}"],
-							"path": ["medicos", "1", "disponibilidades", "1"]
-						}
-					}
-				}
-			]
-		}
-	]
+  "info": {
+    "name": "Sweet Medical",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000"
+    }
+  ],
+  "item": [
+    {
+      "name": "Health Check",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/health",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "health"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Especialidades",
+      "item": [
+        {
+          "name": "Obtener Todas las Especialidades",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/especialidades",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "especialidades"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Obtener Especialidad por ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/especialidades/:especialidadId",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "especialidades",
+                ":especialidadId"
+              ],
+              "variable": [
+                {
+                  "key": "especialidadId",
+                  "value": "<_id de la especialidad>"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Crear Especialidad",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/especialidades",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "especialidades"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"nombre\": \"Cardiología\",\n    \"duracionTurnoEnMins\": 30,\n    \"costoConsulta\": 5000\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Actualizar Especialidad",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/especialidades/:especialidadId",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "especialidades",
+                ":especialidadId"
+              ],
+              "variable": [
+                {
+                  "key": "especialidadId",
+                  "value": "<_id de la especialidad>"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"costoConsulta\": 6000\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Eliminar Especialidad",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/especialidades/:especialidadId",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "especialidades",
+                ":especialidadId"
+              ],
+              "variable": [
+                {
+                  "key": "especialidadId",
+                  "value": "<_id de la especialidad>"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Prácticas",
+      "item": [
+        {
+          "name": "Obtener Todas las Prácticas",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/practicas",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "practicas"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Obtener Práctica por ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/practicas/:practicaId",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "practicas",
+                ":practicaId"
+              ],
+              "variable": [
+                {
+                  "key": "practicaId",
+                  "value": "<_id de la práctica>"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Crear Práctica",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/practicas",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "practicas"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"codigo\": \"PRAC-001\",\n    \"nombre\": \"Electrocardiograma\",\n    \"duracionTurnoEnMins\": 20,\n    \"costo\": 3000\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Actualizar Práctica",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/practicas/:practicaId",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "practicas",
+                ":practicaId"
+              ],
+              "variable": [
+                {
+                  "key": "practicaId",
+                  "value": "<_id de la práctica>"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"costo\": 3500\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Eliminar Práctica",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/practicas/:practicaId",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "practicas",
+                ":practicaId"
+              ],
+              "variable": [
+                {
+                  "key": "practicaId",
+                  "value": "<_id de la práctica>"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Sedes",
+      "item": [
+        {
+          "name": "Obtener Todas las Sedes",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/sedes",
+              "host": ["{{baseUrl}}"],
+              "path": ["sedes"]
+            }
+          }
+        },
+        {
+          "name": "Obtener Sede por ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/sedes/:sedeId",
+              "host": ["{{baseUrl}}"],
+              "path": ["sedes", ":sedeId"],
+              "variable": [
+                { "key": "sedeId", "value": "<_id de la sede>" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Crear Sede",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": {
+              "raw": "{{baseUrl}}/sedes",
+              "host": ["{{baseUrl}}"],
+              "path": ["sedes"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"nombre\": \"Sede Central\",\n    \"direccion\": \"Av. Corrientes 1234\"\n}",
+              "options": { "raw": { "language": "json" } }
+            }
+          }
+        },
+        {
+          "name": "Actualizar Sede",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": {
+              "raw": "{{baseUrl}}/sedes/:sedeId",
+              "host": ["{{baseUrl}}"],
+              "path": ["sedes", ":sedeId"],
+              "variable": [
+                { "key": "sedeId", "value": "<_id de la sede>" }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"direccion\": \"Av. Corrientes 5678\"\n}",
+              "options": { "raw": { "language": "json" } }
+            }
+          }
+        },
+        {
+          "name": "Eliminar Sede",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/sedes/:sedeId",
+              "host": ["{{baseUrl}}"],
+              "path": ["sedes", ":sedeId"],
+              "variable": [
+                { "key": "sedeId", "value": "<_id de la sede>" }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Obras Sociales",
+      "item": [
+        {
+          "name": "Obtener Todas las Obras Sociales",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/obras-sociales",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "obras-sociales"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Obtener Obra Social por ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/obras-sociales/:obraSocialId",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "obras-sociales",
+                ":obraSocialId"
+              ],
+              "variable": [
+                {
+                  "key": "obraSocialId",
+                  "value": "<_id de la obra social>"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Crear Obra Social",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/obras-sociales",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "obras-sociales"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"nombre\": \"OSDE\",\n    \"planes\": [\n        {\n            \"nombre\": \"210\",\n            \"coberturasEspecialidad\": [\n                { \"especialidad\": \"<_id de la especialidad>\", \"nivel\": \"total\" }\n            ],\n            \"coberturasPractica\": [\n                { \"practica\": \"<_id de la practica>\", \"nivel\": \"parcial\" }\n            ]\n        }\n    ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Actualizar Obra Social",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/obras-sociales/:obraSocialId",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "obras-sociales",
+                ":obraSocialId"
+              ],
+              "variable": [
+                {
+                  "key": "obraSocialId",
+                  "value": "<_id de la obra social>"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"nombre\": \"OSDE Actualizada\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Eliminar Obra Social",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/obras-sociales/:obraSocialId",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "obras-sociales",
+                ":obraSocialId"
+              ],
+              "variable": [
+                {
+                  "key": "obraSocialId",
+                  "value": "<_id de la obra social>"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Medicos",
+      "item": [
+        {
+          "name": "Obtener Todos los Médicos",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/medicos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "medicos"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Obtener Médico por ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/medicos/:medicoId",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "medicos",
+                ":medicoId"
+              ],
+              "variable": [
+                {
+                  "key": "medicoId",
+                  "value": "<_id del médico>"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Crear Médico",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/medicos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "medicos"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"nombreUsuario\": \"jperez\",\n    \"password\": \"1234\",\n    \"matricula\": \"MAT-001\",\n    \"nombre\": \"Juan Perez\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Actualizar Médico",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/medicos/:medicoId",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "medicos",
+                ":medicoId"
+              ],
+              "variable": [
+                {
+                  "key": "medicoId",
+                  "value": "<_id del médico>"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"nombre\": \"Juan Actualizado\",\n    \"matricula\": \"MAT-002\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Eliminar Médico",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/medicos/:medicoId",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "medicos",
+                ":medicoId"
+              ],
+              "variable": [
+                {
+                  "key": "medicoId",
+                  "value": "<_id del médico>"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Historial de Turnos del Médico",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/medicos/:medicoId/turnos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "medicos",
+                ":medicoId",
+                "turnos"
+              ],
+              "variable": [
+                {
+                  "key": "medicoId",
+                  "value": "<_id del médico>"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Agregar Especialidad al Médico",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/medicos/:medicoId/especialidades",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "medicos",
+                ":medicoId",
+                "especialidades"
+              ],
+              "variable": [
+                {
+                  "key": "medicoId",
+                  "value": "<_id del médico>"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"especialidadId\": \"<_id de la especialidad>\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Eliminar Especialidad del Médico",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/medicos/:medicoId/especialidades/:especialidadId",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "medicos",
+                ":medicoId",
+                "especialidades",
+                ":especialidadId"
+              ],
+              "variable": [
+                {
+                  "key": "medicoId",
+                  "value": "<_id del médico>"
+                },
+                {
+                  "key": "especialidadId",
+                  "value": "<_id de la especialidad>"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Agregar Práctica al Médico",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/medicos/:medicoId/practicas",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "medicos",
+                ":medicoId",
+                "practicas"
+              ],
+              "variable": [
+                {
+                  "key": "medicoId",
+                  "value": "<_id del médico>"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"practicaId\": \"<_id de la práctica>\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Eliminar Práctica del Médico",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/medicos/:medicoId/practicas/:practicaId",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "medicos",
+                ":medicoId",
+                "practicas",
+                ":practicaId"
+              ],
+              "variable": [
+                {
+                  "key": "medicoId",
+                  "value": "<_id del médico>"
+                },
+                {
+                  "key": "practicaId",
+                  "value": "<_id de la práctica>"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Agregar Sede al Médico",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": {
+              "raw": "{{baseUrl}}/medicos/:medicoId/sedes",
+              "host": ["{{baseUrl}}"],
+              "path": ["medicos", ":medicoId", "sedes"],
+              "variable": [
+                { "key": "medicoId", "value": "<_id del médico>" }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"sedeId\": \"<_id de la sede>\"\n}",
+              "options": { "raw": { "language": "json" } }
+            }
+          }
+        },
+        {
+          "name": "Eliminar Sede del Médico",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/medicos/:medicoId/sedes/:sedeId",
+              "host": ["{{baseUrl}}"],
+              "path": ["medicos", ":medicoId", "sedes", ":sedeId"],
+              "variable": [
+                { "key": "medicoId", "value": "<_id del médico>" },
+                { "key": "sedeId", "value": "<_id de la sede>" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Disponibilidades",
+          "item": [
+            {
+              "name": "Obtener Disponibilidades",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/medicos/:medicoId/disponibilidades",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "medicos",
+                    ":medicoId",
+                    "disponibilidades"
+                  ],
+                  "variable": [
+                    {
+                      "key": "medicoId",
+                      "value": "<_id del médico>"
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "name": "Obtener Disponibilidad por ID",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/medicos/:medicoId/disponibilidades/:disponibilidadId",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "medicos",
+                    ":medicoId",
+                    "disponibilidades",
+                    ":disponibilidadId"
+                  ],
+                  "variable": [
+                    {
+                      "key": "medicoId",
+                      "value": "<_id del médico>"
+                    },
+                    {
+                      "key": "disponibilidadId",
+                      "value": "<_id de la disponibilidad>"
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "name": "Crear Disponibilidad",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/medicos/:medicoId/disponibilidades",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "medicos",
+                    ":medicoId",
+                    "disponibilidades"
+                  ],
+                  "variable": [
+                    {
+                      "key": "medicoId",
+                      "value": "<_id del médico>"
+                    }
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"nuevaDisponibilidad\": {\n        \"diaSemana\": \"LUNES\",\n        \"horaInicio\": \"09:00\",\n        \"horaFin\": \"13:00\"\n    }\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "name": "Editar Disponibilidad",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/medicos/:medicoId/disponibilidades/:disponibilidadId",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "medicos",
+                    ":medicoId",
+                    "disponibilidades",
+                    ":disponibilidadId"
+                  ],
+                  "variable": [
+                    {
+                      "key": "medicoId",
+                      "value": "<_id del médico>"
+                    },
+                    {
+                      "key": "disponibilidadId",
+                      "value": "<_id de la disponibilidad>"
+                    }
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"nuevaDisponibilidad\": {\n        \"diaSemana\": \"LUNES\",\n        \"horaInicio\": \"09:00\",\n        \"horaFin\": \"13:00\"\n    }\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "name": "Eliminar Disponibilidad",
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/medicos/:medicoId/disponibilidades/:disponibilidadId",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "medicos",
+                    ":medicoId",
+                    "disponibilidades",
+                    ":disponibilidadId"
+                  ],
+                  "variable": [
+                    {
+                      "key": "medicoId",
+                      "value": "<_id del médico>"
+                    },
+                    {
+                      "key": "disponibilidadId",
+                      "value": "<_id de la disponibilidad>"
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Pacientes",
+      "item": [
+        {
+          "name": "Obtener Todos los Pacientes",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/pacientes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "pacientes"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Obtener Paciente por ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/pacientes/:pacienteId",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "pacientes",
+                ":pacienteId"
+              ],
+              "variable": [
+                {
+                  "key": "pacienteId",
+                  "value": "<_id del paciente>"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Crear Paciente",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/pacientes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "pacientes"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"nombreUsuario\": \"mpacheco\",\n    \"password\": \"1234\",\n    \"dni\": \"12345678\",\n    \"nombre\": \"María Pacheco\",\n    \"obraSocialId\": \"<_id de la obra social>\",\n    \"planId\": \"<_id del plan>\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Actualizar Paciente",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/pacientes/:pacienteId",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "pacientes",
+                ":pacienteId"
+              ],
+              "variable": [
+                {
+                  "key": "pacienteId",
+                  "value": "<_id del paciente>"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"nombre\": \"María Actualizada\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Eliminar Paciente",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/pacientes/:pacienteId",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "pacientes",
+                ":pacienteId"
+              ],
+              "variable": [
+                {
+                  "key": "pacienteId",
+                  "value": "<_id del paciente>"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Historial de Turnos del Paciente",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/pacientes/:pacienteId/turnos?medicoId=<_id del médico>",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "pacientes",
+                ":pacienteId",
+                "turnos"
+              ],
+              "variable": [
+                {
+                  "key": "pacienteId",
+                  "value": "<_id del paciente>"
+                }
+              ],
+              "query": [
+                {
+                  "key": "medicoId",
+                  "value": "<_id del médico>",
+                  "disabled": true,
+                  "description": "Opcional. Filtra los turnos por médico."
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Turnos",
+      "item": [
+        {
+          "name": "Alta de Turno",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/turnos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "turnos"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"medicoId\": \"<_id del médico>\",\n    \"pacienteId\": \"<_id del paciente>\",\n    \"fechaHora\": \"2026-12-20T10:30:00\",\n    \"sedeId\": \"<_id de la sede>\",\n    \"especialidadId\": \"<_id de la especialidad>\",\n    \"practicaId\": \"<_id de la práctica>\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Cancelar Turno (Paciente)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/turnos/:turnoId/paciente",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "turnos",
+                ":turnoId",
+                "paciente"
+              ],
+              "variable": [
+                {
+                  "key": "turnoId",
+                  "value": "<_id del turno>"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"pacienteId\": \"<_id del paciente>\",\n    \"motivo\": \"No puedo asistir\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Cancelar Turno (Médico)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/turnos/:turnoId/medico",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "turnos",
+                ":turnoId",
+                "medico"
+              ],
+              "variable": [
+                {
+                  "key": "turnoId",
+                  "value": "<_id del turno>"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"medicoId\": \"<_id del médico>\",\n    \"motivo\": \"Emergencia médica\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Cambiar Fecha (Paciente)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/turnos/:turnoId/cambio-fecha/paciente",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "turnos",
+                ":turnoId",
+                "cambio-fecha",
+                "paciente"
+              ],
+              "variable": [
+                {
+                  "key": "turnoId",
+                  "value": "<_id del turno>"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"pacienteId\": \"<_id del paciente>\",\n    \"nuevaFechaHora\": \"2026-12-25T10:30:00\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Proponer Cambio de Fecha (Médico)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/turnos/:turnoId/solicitud-cambio-fecha/medico",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "turnos",
+                ":turnoId",
+                "solicitud-cambio-fecha",
+                "medico"
+              ],
+              "variable": [
+                {
+                  "key": "turnoId",
+                  "value": "<_id del turno>"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"medicoId\": \"<_id del médico>\",\n    \"nuevaFechaHora\": \"2026-12-25T10:30:00\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Confirmar Cambio de Fecha (Paciente)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/turnos/:turnoId/solicitud-cambio-fecha/confirmar/paciente",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "turnos",
+                ":turnoId",
+                "solicitud-cambio-fecha",
+                "confirmar",
+                "paciente"
+              ],
+              "variable": [
+                {
+                  "key": "turnoId",
+                  "value": "<_id del turno>"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"pacienteId\": \"<_id del paciente>\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Rechazar Cambio de Fecha (Paciente)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/turnos/:turnoId/solicitud-cambio-fecha/rechazar/paciente",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "turnos",
+                ":turnoId",
+                "solicitud-cambio-fecha",
+                "rechazar",
+                "paciente"
+              ],
+              "variable": [
+                {
+                  "key": "turnoId",
+                  "value": "<_id del turno>"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"pacienteId\": \"<_id del paciente>\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Notificaciones",
+      "item": [
+        {
+          "name": "Obtener Notificaciones Sin Leer",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/notificaciones/sin-leer/:usuarioId",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "notificaciones",
+                "sin-leer",
+                ":usuarioId"
+              ],
+              "variable": [
+                {
+                  "key": "usuarioId",
+                  "value": "68168e0ba19587af5fd6f892"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Obtener Notificaciones Leídas",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/notificaciones/leidas/:usuarioId",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "notificaciones",
+                "leidas",
+                ":usuarioId"
+              ],
+              "variable": [
+                {
+                  "key": "usuarioId",
+                  "value": "68168e0ba19587af5fd6f892"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Marcar Notificación como Leída",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/notificaciones/:notificacionId/marcar-leida",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "notificaciones",
+                ":notificacionId",
+                "marcar-leida"
+              ],
+              "variable": [
+                {
+                  "key": "notificacionId",
+                  "value": "68168e0ba19587af5fd6f893"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
 }

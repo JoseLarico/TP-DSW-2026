@@ -1,65 +1,55 @@
-import { Medico } from "../models/medico.model.js";
+import MedicoModel from "../models/mongoose/medico.model.js";
 
 export class MedicoRepository {
-    constructor() {
-        this.nextId = 1;
-        this.medicos = [];
-        this.initializeMedicoMock();
+   
+    async findAll() {
+        return await MedicoModel.find()
+            .populate('usuario', '-password')
+            .populate('especialidades')
+            .populate('practicas')
+            .populate('sedes');
     }
 
-initializeMedicoMock() {
-    const disponibilidadMock = {
-        id: 1,
-        diaSemana: "LUNES",
-        horaInicio: "08:00",
-        horaFin: "12:00"
-    };
-    const disponibilidadMock2 = {
-        id: 2,
-        diaSemana: "MARTES",
-        horaInicio: "10:00",
-        horaFin: "15:00"
-    };
-    const medicoMock = new Medico(
-        1,
-        "user1",
-        "123",
-        "Juan",
-        [],
-        [],
-        [],
-        [disponibilidadMock, disponibilidadMock2]
-    );
-
-    this.medicos.push(medicoMock);
-
-    if (this.nextId <= 1) {
-        this.nextId = 2;
-    }
-
-    return medicoMock;
-}
-
-    save(medico) {
-        if (!medico.id) {
-            medico.id = this.nextId++;
-            this.medicos.push(medico);
+    async save(medico) {
+        if (!medico._id) {
+            const nuevoMedico = new MedicoModel(medico);
+            const saved = await nuevoMedico.save();
+            return await saved.populate([
+                { path: 'usuario', select: '-password' },
+                { path: 'especialidades' },
+                { path: 'practicas' },
+                { path: 'sedes' }
+            ]);
         } else {
-            const index = this.medicos.findIndex(m => m.id === medico.id);
-            if (index !== -1) {
-                this.medicos[index] = medico;
-            }
+            return await MedicoModel.findByIdAndUpdate(medico._id, medico, { returnDocument: 'after' })
+                .populate('usuario', '-password')
+                .populate('especialidades')
+                .populate('practicas')
+                .populate('sedes');
         }
-        return medico;
     }
 
-   static instance() {
+    static instance() {
         this._instance ||= new this();
         return this._instance;
     }
 
-findById(id) {
-    return this.medicos.find(m => m.id === Number(id));
-}
+    async findById(id) {
+        const medico = await MedicoModel.findById(id)
+            .populate('usuario', '-password')
+            .populate('especialidades')
+            .populate('practicas')
+            .populate('sedes');
+        if (!medico) throw new Error('Médico no encontrado');
+        return medico;
+    }
+
+    async findByMatricula(matricula) {
+        return await MedicoModel.findOne({ matricula });
+    }
+
+    async deleteById(id) {
+        return await MedicoModel.findByIdAndDelete(id);
+    }
 
 }

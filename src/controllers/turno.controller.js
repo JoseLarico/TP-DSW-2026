@@ -12,10 +12,10 @@ export class TurnoController {
         this.turnoService = turnoService;
     }
 
-    altaTurno(req, res) {
-        const { medicoId, paciente, fechaHora, sede, practica } = req.body;
+    async altaTurno(req, res) {
+        const { medicoId, pacienteId, fechaHora, sedeId, especialidadId, practicaId } = req.body;
         try {
-            const turnoCreado = this.turnoService.altaTurno(medicoId, paciente, fechaHora, sede, practica);
+            const turnoCreado = await this.turnoService.altaTurno(medicoId, pacienteId, fechaHora, sedeId, especialidadId, practicaId);
             res.status(201).json({ turno: turnoCreado });
         } catch (error) {
             if (error.message === "Médico no encontrado") {
@@ -35,13 +35,87 @@ export class TurnoController {
 
     Sin try catch esos errores harían caer la aplicación. Con try catch los atrapás y los convertís en respuestas HTTP con el código correspondiente.
     */
-    bajaTurno(req, res) {
-        const { id } = req.params;
-        const { motivo } = req.body;
-
+    async cancelarPorPaciente(req, res) {
+        const { turnoId } = req.params;
+        const { pacienteId, motivo } = req.body ?? {};
         try {
-            const turnoActualizado = this.turnoService.bajaTurno(id, motivo);
-            res.status(200).json({ turno: turnoActualizado });
+            const turno = await this.turnoService.cancelarPorPaciente(turnoId, pacienteId, motivo);
+            res.status(200).json({ turno });
+        } catch (error) {
+            if (error.message === "Turno no encontrado") {
+                res.status(404).json({ error: error.message });
+            } else {
+                res.status(400).json({ error: error.message });
+            }
+        }
+    }
+
+    async cancelarPorMedico(req, res) {
+        const { turnoId } = req.params;
+        const { medicoId, motivo } = req.body ?? {};
+        try {
+            const turno = await this.turnoService.cancelarPorMedico(turnoId, medicoId, motivo);
+            res.status(200).json({ turno });
+        } catch (error) {
+            if (error.message === "Turno no encontrado") {
+                res.status(404).json({ error: error.message });
+            } else {
+                res.status(400).json({ error: error.message });
+            }
+        }
+    }
+
+    async cambiarFechaPaciente(req, res) {
+        const { turnoId } = req.params;
+        const { pacienteId, nuevaFechaHora } = req.body;
+        try {
+            const turno = await this.turnoService.cambiarFechaPaciente(turnoId, pacienteId, nuevaFechaHora);
+            res.status(200).json({ turno });
+        } catch (error) {
+            if (error.message === "Turno no encontrado") {
+                res.status(404).json({ error: error.message });
+            } else {
+                res.status(400).json({ error: error.message });
+            }
+        }
+    }
+
+    async proponerCambioFechaMedico(req, res) {
+        const { turnoId } = req.params;
+        const { medicoId, nuevaFechaHora } = req.body;
+        try {
+            const turno = await this.turnoService.proponerCambioFechaMedico(turnoId, medicoId, nuevaFechaHora);
+            res.status(200).json({ turno });
+        } catch (error) {
+            if (error.message === "Turno no encontrado") {
+                res.status(404).json({ error: error.message });
+            } else {
+                res.status(400).json({ error: error.message });
+            }
+        }
+    }
+
+    async confirmarCambioFechaPaciente(req, res) {
+        const { turnoId } = req.params;
+        const { pacienteId } = req.body;
+        try {
+            const turno = await this.turnoService.confirmarCambioFechaPaciente(turnoId, pacienteId);
+            res.status(200).json({ turno });
+        } catch (error) {
+            if (error.message === "Turno no encontrado") {
+                res.status(404).json({ error: error.message });
+            } else {
+                res.status(400).json({ error: error.message });
+            }
+        }
+    }
+
+    async rechazarCambioFechaPaciente(req, res) {
+        const { turnoId } = req.params;
+        const { pacienteId } = req.body;
+        try {
+            const turno = await this.turnoService.rechazarCambioFechaPaciente(turnoId, pacienteId);
+            res.status(200).json({ turno });
         } catch (error) {
             if (error.message === "Turno no encontrado") {
                 res.status(404).json({ error: error.message });

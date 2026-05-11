@@ -4,3 +4,5 @@
 [Enunciado](https://docs.google.com/document/d/1U5EYxgEFmlcIr6KldAwtHsrHBdGdVMfGUFunTRVTvwI/edit?usp=sharing)
 
 [Git Flow](./GIT_FLOW.md)
+
+[Decisiones Diseño](./DECISIONES_DISEÑO.md)

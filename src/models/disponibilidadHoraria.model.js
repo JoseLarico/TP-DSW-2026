@@ -1,7 +1,6 @@
 import dayjs from "dayjs";
 import customParseFormat from "dayjs/plugin/customParseFormat.js";
 dayjs.extend(customParseFormat);
-
 export class DisponibilidadHoraria {
   constructor(diaSemana, horaDesde, horaHasta) {
     this.diaSemana = diaSemana;

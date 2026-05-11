@@ -1,0 +1,2 @@
+"Pacientes: Hacer un cambio de turno: es decir, se debe cambiar el turno actual para otro slot disponible que tenga el mismo profesional. (Se debe tener en cuenta las mismas validaciones para la cancelación de un turno)."
+Consideramos que la validacion "indicar un motivo", en este caso, no tiene sentido ya que no hay una confirmación/rechazo del médico.  

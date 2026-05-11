@@ -2,12 +2,12 @@ import { CambioEstadoTurno } from "./cambioEstadoTurno.model.js";
 import dayjs from "dayjs";
 
 export class Turno {
-    constructor (id, medico, paciente, fechaHora, sede, practica, estado, historialEstados, costo) {
-        this.id = id;
+    constructor(medico, paciente, fechaHora, sede, especialidad, practica, estado, historialEstados, costo) {
         this.medico = medico;
         this.paciente = paciente;
         this.fechaHora = fechaHora;
         this.sede = sede;
+        this.especialidad = especialidad;
         this.practica = practica;
         this.estado = estado;
         this.historialEstados = historialEstados;

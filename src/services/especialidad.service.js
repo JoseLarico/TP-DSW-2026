@@ -1,10 +1,17 @@
 import { EspecialidadRepository } from '../repositories/especialidad.repository.js';
+import { TurnoRepository } from '../repositories/turno.repository.js';
+import { MedicoRepository } from '../repositories/medico.repository.js';
+import { ConflictError, ValidationError } from '../error/appError.js';
 
 export class EspecialidadService {
     constructor({
-        especialidadRepository = EspecialidadRepository.instance()
+        especialidadRepository = EspecialidadRepository.instance(),
+        turnoRepository = TurnoRepository.instance(),
+        medicoRepository = MedicoRepository.instance()
     } = {}) {
         this.EspecialidadRepository = especialidadRepository;
+        this.turnoRepository = turnoRepository;
+        this.medicoRepository = medicoRepository;
     }
 
     static instance() {
@@ -24,7 +31,7 @@ export class EspecialidadService {
         const { nombre, duracionTurnoEnMins, costoConsulta } = datos;
 
         const existente = await this.EspecialidadRepository.findByNombre(nombre);
-        if (existente) throw new Error('Ya existe una especialidad con ese nombre');
+        if (existente) throw new ConflictError('Ya existe una especialidad con ese nombre');
 
         return await this.EspecialidadRepository.save({ nombre, duracionTurnoEnMins, costoConsulta });
     }
@@ -36,6 +43,10 @@ export class EspecialidadService {
 
     async eliminar(id) {
         await this.EspecialidadRepository.findById(id);
+        const tieneTurnosFuturos = await this.turnoRepository.existenTurnosFuturosActivos({ especialidad: id });
+        if (tieneTurnosFuturos) throw new ValidationError('No se puede eliminar la especialidad porque tiene turnos futuros asociados');
+        const tieneMedicos = await this.medicoRepository.existsByEspecialidad(id);
+        if (tieneMedicos) throw new ValidationError('No se puede eliminar la especialidad porque hay médicos que la tienen asignada');
         await this.EspecialidadRepository.deleteById(id);
     }
 }

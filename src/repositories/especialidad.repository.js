@@ -1,4 +1,5 @@
-import EspecialidadModel from '../models/mongoose/especialidad.model.js';
+﻿import EspecialidadModel from '../models/mongoose/especialidad.model.js';
+import { NotFoundError } from '../error/appError.js';
 
 export class EspecialidadRepository {
 
@@ -13,7 +14,7 @@ export class EspecialidadRepository {
 
     async findById(id) {
         const especialidad = await EspecialidadModel.findById(id);
-        if (!especialidad) throw new Error('Especialidad no encontrada');
+        if (!especialidad) throw new NotFoundError('Especialidad no encontrada');
         return especialidad;
     }
 

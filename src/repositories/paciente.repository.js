@@ -1,4 +1,5 @@
-import PacienteModel from "../models/mongoose/paciente.model.js"
+﻿import PacienteModel from "../models/mongoose/paciente.model.js"
+import { NotFoundError } from '../error/appError.js';
 
 export class PacienteRepository {
     #resolvePlan(paciente) {
@@ -44,7 +45,7 @@ export class PacienteRepository {
         const paciente = await PacienteModel.findById(id)
             .populate('usuario', '-password')
             .populate('obraSocial');
-        if (!paciente) throw new Error('Paciente no encontrado');
+        if (!paciente) throw new NotFoundError('Paciente no encontrado');
         return this.#resolvePlan(paciente);
     }
 
@@ -54,5 +55,9 @@ export class PacienteRepository {
 
     async deleteById(id) {
         return await PacienteModel.findByIdAndDelete(id);
+    }
+
+    async existsByObraSocial(obraSocialId) {
+        return await PacienteModel.exists({ obraSocial: obraSocialId });
     }
 }

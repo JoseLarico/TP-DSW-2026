@@ -1,4 +1,4 @@
-/* 
+﻿/* 
 El repository es la capa de acceso a datos que interactúa con mongo db a traves de mongoose.
 Métodos principales:
 - create(turno) → crea un nuevo turno en la BD
@@ -8,6 +8,7 @@ Métodos principales:
 */ 
 
 import TurnoModel from "../models/mongoose/turno.model.js";
+import { NotFoundError } from '../error/appError.js';
 import { EstadoTurno } from "../enums/estadoTurno.enum.js";
 
 const POPULATE_TURNO = [
@@ -56,8 +57,70 @@ export class TurnoRepository {
 
     async findById(id) {
         const turno = await TurnoModel.findById(id);
-        if (!turno) throw new Error('Turno no encontrado');
+        if (!turno) throw new NotFoundError('Turno no encontrado');
         return turno;
+    }
+
+    async findDisponibleByMedicoAndFechaHora(medicoId, fechaHora) {
+        return await TurnoModel.findOne({
+            medico: medicoId,
+            fechaHora: new Date(fechaHora),
+            estado: EstadoTurno.DISPONIBLE
+        });
+    }
+
+    async deleteFutureDisponiblesByMedico(medicoId) {
+        await TurnoModel.deleteMany({
+            medico: medicoId,
+            estado: EstadoTurno.DISPONIBLE,
+            fechaHora: { $gt: new Date() }
+        });
+    }
+
+    async deleteDisponiblesByMedicoAndFechaHora(medicoId, fechaHora) {
+        await TurnoModel.deleteMany({
+            medico: medicoId,
+            fechaHora: new Date(fechaHora),
+            estado: EstadoTurno.DISPONIBLE
+        });
+    }
+
+    async existenTurnosFuturosActivos(filtro) {
+        const query = {
+            ...filtro,
+            estado: { $in: [EstadoTurno.DISPONIBLE, EstadoTurno.RESERVADO] },
+            fechaHora: { $gt: new Date() }
+        };
+        return await TurnoModel.exists(query);
+    }
+
+    async buscarDisponibles({ medicoId, especialidadId, practicaId, sedeId, fechaDesde, fechaHasta, page = 1, limit = 10, sortBy = 'fechaHora', sortOrder = 'asc' } = {}) {
+        const query = {
+            estado: EstadoTurno.DISPONIBLE,
+            fechaHora: { $gt: new Date() }
+        };
+        if (medicoId) query.medico = medicoId;
+        if (especialidadId) query.especialidad = especialidadId;
+        if (practicaId) query.practica = practicaId;
+        if (sedeId) query.sede = sedeId;
+        if (fechaDesde) query.fechaHora.$gte = new Date(fechaDesde);
+        if (fechaHasta) {
+            const endOfDay = new Date(fechaHasta);
+            endOfDay.setUTCHours(23, 59, 59, 999);
+            query.fechaHora.$lte = endOfDay;
+        }
+
+        const sortField = sortBy === 'costo' ? 'costo' : 'fechaHora';
+        const sortDir = sortOrder === 'desc' ? -1 : 1;
+
+        const total = await TurnoModel.countDocuments(query);
+        const turnos = await TurnoModel.find(query)
+            .populate(POPULATE_TURNO)
+            .sort({ [sortField]: sortDir })
+            .skip((page - 1) * limit)
+            .limit(limit);
+
+        return { turnos, total, pagina: page, paginas: Math.ceil(total / limit) };
     }
 }
 

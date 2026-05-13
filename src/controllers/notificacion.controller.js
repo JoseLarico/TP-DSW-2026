@@ -5,32 +5,33 @@ export class NotificacionController {
         this.notificacionService = notificacionService;
     }
 
-    async obtenerSinLeer(req, res) {
+    async obtenerSinLeer(req, res, next) {
         const {usuarioId} = req.params;
         try {
             const notificaciones = await this.notificacionService.obtenerSinLeer(usuarioId);
             res.status(200).json({notificaciones});
         } catch(error) {
-            res.status(400).json({error: error.message});
+            next(error);
         }
     }
-    async obtenerLeidas(req, res) {
+
+    async obtenerLeidas(req, res, next) {
         const {usuarioId} = req.params;
         try {
             const notificaciones = await this.notificacionService.obtenerLeidas(usuarioId);
             res.status(200).json({notificaciones});
         } catch(error) {
-            res.status(400).json({error: error.message});
+            next(error);
         }
     }
 
-    async marcarComoLeida(req, res) {
+    async marcarComoLeida(req, res, next) {
         const {notificacionId} = req.params;
         try {
             const notificacion = await this.notificacionService.marcarComoLeida(notificacionId);
             res.status(200).json({notificacion});
         } catch(error) {
-            res.status(400).json({error: error.message});
+            next(error);
         }
     }
 }

@@ -9,129 +9,148 @@ describe("Medico Service", () => {
         medicoService = new MedicoService();
     });
 
-    // ── obtenerDisponibilidades ───────────────────────────────────────────────
+    // ── crearAgenda ───────────────────────────────────────────────────────────
 
-    describe("obtenerDisponibilidades", () => {
+    describe("crearAgenda", () => {
+        const disponibilidad = {
+            diaSemana: "LUNES",
+            horaInicio: "09:00",
+            horaFin: "13:00",
+            fechaFin: "2026-12-31T00:00:00.000Z"
+        };
+
+        const sede = { _id: { toString: () => "sede1" } };
+
         test("Si el médico no existe entonces lanza error", async () => {
             medicoService.MedicoRepository.findById = jest.fn().mockRejectedValue(new Error("Médico no encontrado"));
-            await expect(medicoService.obtenerDisponibilidades(99)).rejects.toThrow("Médico no encontrado");
+            await expect(medicoService.crearAgenda("99", "especialidad", "esp1", "sede1", disponibilidad)).rejects.toThrow("Médico no encontrado");
         });
 
-        test("Si el médico existe entonces devuelve sus disponibilidades", async () => {
-            const medico = new Medico("user1", "123", "Juan", [], [], [], [
-                { _id: "507f1f77bcf86cd799439011", diaSemana: "LUNES", horaInicio: "08:00", horaFin: "12:00" }
-            ]);
+        test("Si el médico no atiende en esa sede entonces lanza error", async () => {
+            const medico = new Medico("user1", "123", "Juan", [{ _id: { toString: () => "esp1" } }], [], []);
             medicoService.MedicoRepository.findById = jest.fn().mockResolvedValue(medico);
-            await expect(medicoService.obtenerDisponibilidades(1)).resolves.toEqual(medico.disponibilidades);
+            await expect(medicoService.crearAgenda("1", "especialidad", "esp1", "sede1", disponibilidad)).rejects.toThrow("El médico no atiende en esa sede");
+        });
+
+        test("Si la especialidad no existe entonces lanza error", async () => {
+            const medico = new Medico("user1", "123", "Juan", [{ _id: { toString: () => "esp1" } }], [], [sede]);
+            medicoService.MedicoRepository.findById = jest.fn().mockResolvedValue(medico);
+            medicoService.EspecialidadRepository.findById = jest.fn().mockRejectedValue(new Error("Especialidad no encontrada"));
+            await expect(medicoService.crearAgenda("1", "especialidad", "esp1", "sede1", disponibilidad)).rejects.toThrow("Especialidad no encontrada");
+        });
+
+        test("Si el médico no tiene la especialidad entonces lanza error", async () => {
+            const medico = new Medico("user1", "123", "Juan", [], [], [sede]);
+            medicoService.MedicoRepository.findById = jest.fn().mockResolvedValue(medico);
+            medicoService.EspecialidadRepository.findById = jest.fn().mockResolvedValue({ _id: "esp1", costoConsulta: 5000, duracionTurnoEnMins: 30 });
+            await expect(medicoService.crearAgenda("1", "especialidad", "esp1", "sede1", disponibilidad)).rejects.toThrow("El médico no tiene esa especialidad");
+        });
+
+        test("Si la disponibilidad tiene horaInicio mayor a horaFin entonces lanza error", async () => {
+            const medico = new Medico("user1", "123", "Juan", [{ _id: { toString: () => "esp1" } }], [], [sede]);
+            medicoService.MedicoRepository.findById = jest.fn().mockResolvedValue(medico);
+            medicoService.EspecialidadRepository.findById = jest.fn().mockResolvedValue({ _id: "esp1", costoConsulta: 5000, duracionTurnoEnMins: 30 });
+            const dispInvalida = { diaSemana: "LUNES", horaInicio: "13:00", horaFin: "09:00", fechaFin: "2026-12-31T00:00:00.000Z" };
+            await expect(medicoService.crearAgenda("1", "especialidad", "esp1", "sede1", dispInvalida)).rejects.toThrow("Hora inicio debe ser menor a hora fin");
+        });
+
+        test("Si los datos son válidos genera turnos para una especialidad", async () => {
+            const especialidad = { _id: "esp1", costoConsulta: 5000, duracionTurnoEnMins: 30 };
+            const medico = new Medico("user1", "123", "Juan", [{ _id: { toString: () => "esp1" } }], [], [sede]);
+            medicoService.MedicoRepository.findById = jest.fn().mockResolvedValue(medico);
+            medicoService.EspecialidadRepository.findById = jest.fn().mockResolvedValue(especialidad);
+            medicoService.agenda.crearAgenda = jest.fn().mockResolvedValue([]);
+            const result = await medicoService.crearAgenda("1", "especialidad", "esp1", "sede1", disponibilidad);
+            expect(medicoService.agenda.crearAgenda).toHaveBeenCalledWith(medico, especialidad, "sede1", disponibilidad);
+            expect(result).toEqual([]);
+        });
+
+        test("Si los datos son válidos genera turnos para una práctica", async () => {
+            const practica = { _id: "prac1", costo: 3000, duracionTurnoEnMins: 20 };
+            const medico = new Medico("user1", "123", "Juan", [], [{ _id: { toString: () => "prac1" } }], [sede]);
+            medicoService.MedicoRepository.findById = jest.fn().mockResolvedValue(medico);
+            medicoService.PracticaRepository.findById = jest.fn().mockResolvedValue(practica);
+            medicoService.agenda.crearAgenda = jest.fn().mockResolvedValue([]);
+            await medicoService.crearAgenda("1", "practica", "prac1", "sede1", disponibilidad);
+            expect(medicoService.agenda.crearAgenda).toHaveBeenCalledWith(medico, practica, "sede1", disponibilidad);
+        });
+
+        test("Si el médico no tiene la práctica entonces lanza error", async () => {
+            const medico = new Medico("user1", "123", "Juan", [], [], [sede]);
+            medicoService.MedicoRepository.findById = jest.fn().mockResolvedValue(medico);
+            medicoService.PracticaRepository.findById = jest.fn().mockResolvedValue({ _id: "prac1", costo: 3000, duracionTurnoEnMins: 20 });
+            await expect(medicoService.crearAgenda("1", "practica", "prac1", "sede1", disponibilidad)).rejects.toThrow("El médico no tiene esa práctica");
         });
     });
 
-    // ── obtenerDisponibilidadPorId ────────────────────────────────────────────
+    // ── agregarEspecialidad ───────────────────────────────────────────────────
 
-    describe("obtenerDisponibilidadPorId", () => {
+    describe("agregarEspecialidad", () => {
         test("Si el médico no existe entonces lanza error", async () => {
             medicoService.MedicoRepository.findById = jest.fn().mockRejectedValue(new Error("Médico no encontrado"));
-            await expect(medicoService.obtenerDisponibilidadPorId(99, 1)).rejects.toThrow("Médico no encontrado");
+            await expect(medicoService.agregarEspecialidad("99", "esp1")).rejects.toThrow("Médico no encontrado");
         });
 
-        test("Si la disponibilidad no existe entonces lanza error", async () => {
-            const medico = new Medico("user1", "123", "Juan", [], [], [], []);
+        test("Si la especialidad no existe entonces lanza error", async () => {
+            const medico = new Medico("user1", "123", "Juan", [], [], []);
             medicoService.MedicoRepository.findById = jest.fn().mockResolvedValue(medico);
-            await expect(medicoService.obtenerDisponibilidadPorId(1, "507f1f77bcf86cd799439099")).rejects.toThrow("Disponibilidad no encontrada");
+            medicoService.EspecialidadRepository.findById = jest.fn().mockRejectedValue(new Error("Especialidad no encontrada"));
+            await expect(medicoService.agregarEspecialidad("1", "esp1")).rejects.toThrow("Especialidad no encontrada");
         });
 
-        test("Si existe entonces devuelve la disponibilidad correcta", async () => {
-            const disp = { _id: "507f1f77bcf86cd799439011", diaSemana: "LUNES", horaInicio: "08:00", horaFin: "12:00" };
-            const medico = new Medico("user1", "123", "Juan", [], [], [], [disp]);
+        test("Si el médico ya tiene la especialidad entonces lanza error", async () => {
+            const medico = new Medico("user1", "123", "Juan", [{ _id: { toString: () => "esp1" } }], [], []);
             medicoService.MedicoRepository.findById = jest.fn().mockResolvedValue(medico);
-            await expect(medicoService.obtenerDisponibilidadPorId(1, "507f1f77bcf86cd799439011")).resolves.toEqual(disp);
-        });
-    });
-
-    // ── crearDisponibilidad ───────────────────────────────────────────────────
-
-    describe("crearDisponibilidad", () => {
-        test("Si el médico no existe entonces lanza error", async () => {
-            medicoService.MedicoRepository.findById = jest.fn().mockRejectedValue(new Error("Médico no encontrado"));
-            await expect(medicoService.crearDisponibilidad(99, { diaSemana: "LUNES", horaInicio: "08:00", horaFin: "12:00" })).rejects.toThrow("Médico no encontrado");
+            medicoService.EspecialidadRepository.findById = jest.fn().mockResolvedValue({ _id: "esp1" });
+            await expect(medicoService.agregarEspecialidad("1", "esp1")).rejects.toThrow("El médico ya tiene esa especialidad");
         });
 
-        test("Si horaInicio es mayor a horaFin entonces lanza error", async () => {
-            const medico = new Medico("user1", "123", "Juan", [], [], [], []);
+        test("Si los datos son válidos agrega la especialidad al médico", async () => {
+            const medico = new Medico("user1", "123", "Juan", [], [], []);
             medicoService.MedicoRepository.findById = jest.fn().mockResolvedValue(medico);
-            await expect(medicoService.crearDisponibilidad(1, { diaSemana: "LUNES", horaInicio: "12:00", horaFin: "08:00" })).rejects.toThrow("Hora inicio debe ser menor a hora fin");
-        });
-
-        test("Si el horario se solapa con uno existente entonces lanza error", async () => {
-            const medico = new Medico("user1", "123", "Juan", [], [], [], [
-                { _id: "507f1f77bcf86cd799439011", diaSemana: "LUNES", horaInicio: "08:00", horaFin: "12:00" }
-            ]);
-            medicoService.MedicoRepository.findById = jest.fn().mockResolvedValue(medico);
-            medicoService.MedicoRepository.save = jest.fn();
-            await expect(medicoService.crearDisponibilidad(1, { diaSemana: "LUNES", horaInicio: "10:00", horaFin: "14:00" })).rejects.toThrow("Horario ocupado para el médico en ese día y horario");
-        });
-
-        test("Si no hay conflictos entonces agrega la disponibilidad al médico", async () => {
-            const medico = new Medico("user1", "123", "Juan", [], [], [], []);
-            medicoService.MedicoRepository.findById = jest.fn().mockResolvedValue(medico);
+            medicoService.EspecialidadRepository.findById = jest.fn().mockResolvedValue({ _id: "esp1" });
             medicoService.MedicoRepository.save = jest.fn().mockImplementation(m => Promise.resolve(m));
-            const resultado = await medicoService.crearDisponibilidad(1, { diaSemana: "LUNES", horaInicio: "08:00", horaFin: "12:00" });
-            expect(resultado.diaSemana).toBe("LUNES");
+            const resultado = await medicoService.agregarEspecialidad("1", "esp1");
+            expect(resultado.especialidades).toContain("esp1");
         });
     });
 
-    // ── editarDisponibilidad ──────────────────────────────────────────────────
+    // ── eliminarEspecialidad ──────────────────────────────────────────────────
 
-    describe("editarDisponibilidad", () => {
-        test("Si el médico no existe entonces lanza error", async () => {
-            medicoService.MedicoRepository.findById = jest.fn().mockRejectedValue(new Error("Médico no encontrado"));
-            await expect(medicoService.editarDisponibilidad(99, "507f1f77bcf86cd799439011", { diaSemana: "LUNES", horaInicio: "08:00", horaFin: "12:00" })).rejects.toThrow("Médico no encontrado");
-        });
-
-        test("Si la disponibilidad no existe entonces lanza error", async () => {
-            const medico = new Medico("user1", "123", "Juan", [], [], [], []);
+    describe("eliminarEspecialidad", () => {
+        test("Si el médico no tiene la especialidad entonces lanza error", async () => {
+            const medico = new Medico("user1", "123", "Juan", [], [], []);
             medicoService.MedicoRepository.findById = jest.fn().mockResolvedValue(medico);
-            await expect(medicoService.editarDisponibilidad(1, "507f1f77bcf86cd799439099", { diaSemana: "LUNES", horaInicio: "08:00", horaFin: "12:00" })).rejects.toThrow("Disponibilidad no encontrada");
+            await expect(medicoService.eliminarEspecialidad("1", "esp1")).rejects.toThrow("El médico no tiene esa especialidad");
         });
 
-        test("Si el nuevo horario se solapa con otra disponibilidad entonces lanza error", async () => {
-            const medico = new Medico("user1", "123", "Juan", [], [], [], [
-                { _id: "507f1f77bcf86cd799439011", diaSemana: "LUNES", horaInicio: "08:00", horaFin: "12:00" },
-                { _id: "507f1f77bcf86cd799439012", diaSemana: "LUNES", horaInicio: "14:00", horaFin: "18:00" }
-            ]);
-            medicoService.MedicoRepository.findById = jest.fn().mockResolvedValue(medico);
-            await expect(medicoService.editarDisponibilidad(1, "507f1f77bcf86cd799439011", { diaSemana: "LUNES", horaInicio: "13:00", horaFin: "17:00" })).rejects.toThrow("Horario ocupado para el médico en ese día y horario");
-        });
-
-        test("Si los datos son válidos entonces actualiza la disponibilidad", async () => {
-            const medico = new Medico("user1", "123", "Juan", [], [], [], [
-                { _id: "507f1f77bcf86cd799439011", diaSemana: "LUNES", horaInicio: "08:00", horaFin: "12:00" }
-            ]);
-            medicoService.MedicoRepository.findById = jest.fn().mockResolvedValue(medico);
-            medicoService.MedicoRepository.save = jest.fn().mockImplementation(m => Promise.resolve(m));
-            const resultado = await medicoService.editarDisponibilidad(1, "507f1f77bcf86cd799439011", { diaSemana: "MIERCOLES", horaInicio: "09:00", horaFin: "13:00" });
-            expect(resultado).toMatchObject({ diaSemana: "MIERCOLES", horaInicio: "09:00", horaFin: "13:00" });
-        });
-    });
-
-    // ── eliminarDisponibilidad ────────────────────────────────────────────────
-
-    describe("eliminarDisponibilidad", () => {
-        test("Si el médico no existe entonces lanza error", async () => {
-            medicoService.MedicoRepository.findById = jest.fn().mockRejectedValue(new Error("Médico no encontrado"));
-            await expect(medicoService.eliminarDisponibilidad(99, "507f1f77bcf86cd799439011")).rejects.toThrow("Médico no encontrado");
-        });
-
-        test("Si la disponibilidad existe entonces la elimina", async () => {
-            const medico = new Medico("user1", "123", "Juan", [], [], [], [
-                { _id: "507f1f77bcf86cd799439011", diaSemana: "LUNES", horaInicio: "08:00", horaFin: "12:00" },
-                { _id: "507f1f77bcf86cd799439012", diaSemana: "MARTES", horaInicio: "10:00", horaFin: "15:00" }
-            ]);
+        test("Si el médico tiene la especialidad entonces la elimina", async () => {
+            const medico = new Medico("user1", "123", "Juan", [{ _id: { toString: () => "esp1" } }], [], []);
             medicoService.MedicoRepository.findById = jest.fn().mockResolvedValue(medico);
             medicoService.MedicoRepository.save = jest.fn().mockResolvedValue({});
-            await medicoService.eliminarDisponibilidad(1, "507f1f77bcf86cd799439011");
-            expect(medico.disponibilidades).toHaveLength(1);
-            expect(medico.disponibilidades[0]._id).toBe("507f1f77bcf86cd799439012");
+            medicoService.turnoRepository.existenTurnosFuturosActivos = jest.fn().mockResolvedValue(false);
+            await medicoService.eliminarEspecialidad("1", "esp1");
+            expect(medico.especialidades).toHaveLength(0);
+        });
+    });
+
+    // ── agregarPractica ───────────────────────────────────────────────────────
+
+    describe("agregarPractica", () => {
+        test("Si el médico ya tiene la práctica entonces lanza error", async () => {
+            const medico = new Medico("user1", "123", "Juan", [], [{ _id: { toString: () => "prac1" } }], []);
+            medicoService.MedicoRepository.findById = jest.fn().mockResolvedValue(medico);
+            medicoService.PracticaRepository.findById = jest.fn().mockResolvedValue({ _id: "prac1" });
+            await expect(medicoService.agregarPractica("1", "prac1")).rejects.toThrow("El médico ya tiene esa práctica");
+        });
+
+        test("Si los datos son válidos agrega la práctica al médico", async () => {
+            const medico = new Medico("user1", "123", "Juan", [], [], []);
+            medicoService.MedicoRepository.findById = jest.fn().mockResolvedValue(medico);
+            medicoService.PracticaRepository.findById = jest.fn().mockResolvedValue({ _id: "prac1" });
+            medicoService.MedicoRepository.save = jest.fn().mockImplementation(m => Promise.resolve(m));
+            const resultado = await medicoService.agregarPractica("1", "prac1");
+            expect(resultado.practicas).toContain("prac1");
         });
     });
 });

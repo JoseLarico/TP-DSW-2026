@@ -15,4 +15,8 @@ export class UsuarioRepository {
         const nuevoUsuario = new UsuarioModel(usuario);
         return await nuevoUsuario.save();
     }
+
+    async deleteById(id) {
+        return await UsuarioModel.findByIdAndDelete(id);
+    }
 }

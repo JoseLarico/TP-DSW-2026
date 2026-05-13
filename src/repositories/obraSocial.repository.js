@@ -1,4 +1,5 @@
-import ObraSocialModel from '../models/mongoose/obraSocial.model.js';
+﻿import ObraSocialModel from '../models/mongoose/obraSocial.model.js';
+import { NotFoundError } from '../error/appError.js';
 
 export class ObraSocialRepository {
 
@@ -17,7 +18,7 @@ export class ObraSocialRepository {
         const obraSocial = await ObraSocialModel.findById(id)
             .populate('planes.coberturasEspecialidad.especialidad')
             .populate('planes.coberturasPractica.practica');
-        if (!obraSocial) throw new Error('Obra social no encontrada');
+        if (!obraSocial) throw new NotFoundError('Obra social no encontrada');
         return obraSocial;
     }
 

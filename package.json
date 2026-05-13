@@ -21,6 +21,8 @@
   "homepage": "https://github.com/ddsw-mn/2026-1c-backend-grupo-16#readme",
   "dependencies": {
     "dayjs": "^1.11.20",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.1",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
     "mongoose": "^9.6.1",

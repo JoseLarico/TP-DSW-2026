@@ -1,4 +1,5 @@
-import MedicoModel from "../models/mongoose/medico.model.js";
+﻿import MedicoModel from "../models/mongoose/medico.model.js";
+import { NotFoundError } from '../error/appError.js';
 
 export class MedicoRepository {
    
@@ -40,8 +41,20 @@ export class MedicoRepository {
             .populate('especialidades')
             .populate('practicas')
             .populate('sedes');
-        if (!medico) throw new Error('Médico no encontrado');
+        if (!medico) throw new NotFoundError('Médico no encontrado');
         return medico;
+    }
+
+    async findByFiltros({ medicoId, especialidadId, practicaId, sedeId } = {}) {
+        const query = {};
+        if (medicoId) query._id = medicoId;
+        if (especialidadId) query.especialidades = especialidadId;
+        if (practicaId) query.practicas = practicaId;
+        if (sedeId) query.sedes = sedeId;
+        return await MedicoModel.find(query)
+            .populate('especialidades')
+            .populate('practicas')
+            .populate('sedes');
     }
 
     async findByMatricula(matricula) {
@@ -50,6 +63,18 @@ export class MedicoRepository {
 
     async deleteById(id) {
         return await MedicoModel.findByIdAndDelete(id);
+    }
+
+    async existsByEspecialidad(especialidadId) {
+        return await MedicoModel.exists({ especialidades: especialidadId });
+    }
+
+    async existsByPractica(practicaId) {
+        return await MedicoModel.exists({ practicas: practicaId });
+    }
+
+    async existsBySede(sedeId) {
+        return await MedicoModel.exists({ sedes: sedeId });
     }
 
 }

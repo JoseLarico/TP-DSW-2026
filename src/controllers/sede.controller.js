@@ -7,51 +7,51 @@ export class SedeController {
         this.SedeService = sedeService;
     }
 
-    async obtenerTodos(req, res) {
+    async obtenerTodos(req, res, next) {
         try {
             const sedes = await this.SedeService.obtenerTodos();
             res.status(200).json(sedes);
         } catch (error) {
-            res.status(500).json({ error: error.message });
+            next(error);
         }
     }
 
-    async obtenerPorId(req, res) {
+    async obtenerPorId(req, res, next) {
         const { sedeId } = req.params;
         try {
             const sede = await this.SedeService.obtenerPorId(sedeId);
             res.status(200).json(sede);
         } catch (error) {
-            res.status(404).json({ error: error.message });
+            next(error);
         }
     }
 
-    async crear(req, res) {
+    async crear(req, res, next) {
         try {
             const sede = await this.SedeService.crear(req.body);
             res.status(201).json(sede);
         } catch (error) {
-            res.status(400).json({ error: error.message });
+            next(error);
         }
     }
 
-    async actualizar(req, res) {
+    async actualizar(req, res, next) {
         const { sedeId } = req.params;
         try {
             const sede = await this.SedeService.actualizar(sedeId, req.body);
             res.status(200).json(sede);
         } catch (error) {
-            res.status(404).json({ error: error.message });
+            next(error);
         }
     }
 
-    async eliminar(req, res) {
+    async eliminar(req, res, next) {
         const { sedeId } = req.params;
         try {
             await this.SedeService.eliminar(sedeId);
             res.status(200).json({ message: 'Sede eliminada correctamente' });
         } catch (error) {
-            res.status(404).json({ error: error.message });
+            next(error);
         }
     }
 }

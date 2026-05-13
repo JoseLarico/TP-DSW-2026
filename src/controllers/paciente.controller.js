@@ -10,62 +10,62 @@ export class PacienteController {
         this.turnoService = turnoService;
     }
 
-    async obtenerTodos(req, res) {
+    async obtenerTodos(req, res, next) {
         try {
             const pacientes = await this.PacienteService.obtenerTodos();
             res.status(200).json(pacientes);
         } catch (error) {
-            res.status(500).json({ error: error.message });
+            next(error);
         }
     }
 
-    async obtenerPorId(req, res) {
+    async obtenerPorId(req, res, next) {
         const { pacienteId } = req.params;
         try {
             const paciente = await this.PacienteService.obtenerPorId(pacienteId);
             res.status(200).json(paciente);
         } catch (error) {
-            res.status(404).json({ error: error.message });
+            next(error);
         }
     }
 
-    async crear(req, res) {
+    async crear(req, res, next) {
         try {
             const paciente = await this.PacienteService.crear(req.body);
             res.status(201).json(paciente);
         } catch (error) {
-            res.status(400).json({ error: error.message });
+            next(error);
         }
     }
 
-    async actualizar(req, res) {
+    async actualizar(req, res, next) {
         const { pacienteId } = req.params;
         try {
             const paciente = await this.PacienteService.actualizar(pacienteId, req.body);
             res.status(200).json(paciente);
         } catch (error) {
-            res.status(404).json({ error: error.message });
+            next(error);
         }
     }
 
-    async eliminar(req, res) {
+    async eliminar(req, res, next) {
         const { pacienteId } = req.params;
         try {
             await this.PacienteService.eliminar(pacienteId);
             res.status(200).json({ message: 'Paciente eliminado correctamente' });
         } catch (error) {
-            res.status(404).json({ error: error.message });
+            next(error);
         }
     }
 
-    async obtenerHistorialTurnos(req, res) {
+    async obtenerHistorialTurnos(req, res, next) {
         const { pacienteId } = req.params;
         const { medicoId } = req.query;
         try {
             const turnos = await this.turnoService.historialPorPaciente(pacienteId, medicoId);
             res.status(200).json(turnos);
         } catch (error) {
-            res.status(500).json({ error: error.message });
+            next(error);
         }
     }
 }

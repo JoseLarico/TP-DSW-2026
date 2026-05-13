@@ -1,5 +1,6 @@
 import dayjs from "dayjs";
 import customParseFormat from "dayjs/plugin/customParseFormat.js";
+import { ValidationError } from "../error/appError.js";
 dayjs.extend(customParseFormat);
 export class DisponibilidadHoraria {
   constructor(diaSemana, horaDesde, horaHasta) {
@@ -11,15 +12,9 @@ export class DisponibilidadHoraria {
 
   validar() {
     if (!this.horaDesde.isBefore(this.horaHasta)) {
-      throw new Error("Hora inicio debe ser menor a hora fin");
+      throw new ValidationError("Hora inicio debe ser menor a hora fin");
     }
   }
 
-  seSolapa(nuevoHorario) {
-    return (
-      this.diaSemana === nuevoHorario.diaSemana &&
-      this.horaDesde.isBefore(nuevoHorario.horaHasta) &&
-      this.horaHasta.isAfter(nuevoHorario.horaDesde)
-    );
-  }
+
 }

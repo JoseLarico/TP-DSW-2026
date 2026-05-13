@@ -304,8 +304,12 @@
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/sedes",
-              "host": ["{{baseUrl}}"],
-              "path": ["sedes"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "sedes"
+              ]
             }
           }
         },
@@ -316,10 +320,18 @@
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/sedes/:sedeId",
-              "host": ["{{baseUrl}}"],
-              "path": ["sedes", ":sedeId"],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "sedes",
+                ":sedeId"
+              ],
               "variable": [
-                { "key": "sedeId", "value": "<_id de la sede>" }
+                {
+                  "key": "sedeId",
+                  "value": "<_id de la sede>"
+                }
               ]
             }
           }
@@ -328,16 +340,29 @@
           "name": "Crear Sede",
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "url": {
               "raw": "{{baseUrl}}/sedes",
-              "host": ["{{baseUrl}}"],
-              "path": ["sedes"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "sedes"
+              ]
             },
             "body": {
               "mode": "raw",
               "raw": "{\n    \"nombre\": \"Sede Central\",\n    \"direccion\": \"Av. Corrientes 1234\"\n}",
-              "options": { "raw": { "language": "json" } }
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             }
           }
         },
@@ -345,19 +370,36 @@
           "name": "Actualizar Sede",
           "request": {
             "method": "PATCH",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "url": {
               "raw": "{{baseUrl}}/sedes/:sedeId",
-              "host": ["{{baseUrl}}"],
-              "path": ["sedes", ":sedeId"],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "sedes",
+                ":sedeId"
+              ],
               "variable": [
-                { "key": "sedeId", "value": "<_id de la sede>" }
+                {
+                  "key": "sedeId",
+                  "value": "<_id de la sede>"
+                }
               ]
             },
             "body": {
               "mode": "raw",
               "raw": "{\n    \"direccion\": \"Av. Corrientes 5678\"\n}",
-              "options": { "raw": { "language": "json" } }
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             }
           }
         },
@@ -368,10 +410,18 @@
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/sedes/:sedeId",
-              "host": ["{{baseUrl}}"],
-              "path": ["sedes", ":sedeId"],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "sedes",
+                ":sedeId"
+              ],
               "variable": [
-                { "key": "sedeId", "value": "<_id de la sede>" }
+                {
+                  "key": "sedeId",
+                  "value": "<_id de la sede>"
+                }
               ]
             }
           }
@@ -669,6 +719,32 @@
           }
         },
         {
+          "name": "Consultar Disponibilidad del Médico",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/medicos/:medicoId/disponibilidad?especialidadId=<_id>&fechaDesde=2026-05-12&fechaHasta=2026-12-31&page=1&limit=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["medicos", ":medicoId", "disponibilidad"],
+              "variable": [
+                {
+                  "key": "medicoId",
+                  "value": "<_id del médico>"
+                }
+              ],
+              "query": [
+                { "key": "especialidadId", "value": "<_id>", "description": "O usar practicaId" },
+                { "key": "practicaId", "value": "", "disabled": true },
+                { "key": "fechaDesde", "value": "2026-05-12" },
+                { "key": "fechaHasta", "value": "2026-12-31" },
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "10" }
+              ]
+            }
+          }
+        },
+        {
           "name": "Agregar Especialidad al Médico",
           "request": {
             "method": "POST",
@@ -806,19 +882,37 @@
           "name": "Agregar Sede al Médico",
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "url": {
               "raw": "{{baseUrl}}/medicos/:medicoId/sedes",
-              "host": ["{{baseUrl}}"],
-              "path": ["medicos", ":medicoId", "sedes"],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "medicos",
+                ":medicoId",
+                "sedes"
+              ],
               "variable": [
-                { "key": "medicoId", "value": "<_id del médico>" }
+                {
+                  "key": "medicoId",
+                  "value": "<_id del médico>"
+                }
               ]
             },
             "body": {
               "mode": "raw",
               "raw": "{\n    \"sedeId\": \"<_id de la sede>\"\n}",
-              "options": { "raw": { "language": "json" } }
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             }
           }
         },
@@ -829,182 +923,65 @@
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/medicos/:medicoId/sedes/:sedeId",
-              "host": ["{{baseUrl}}"],
-              "path": ["medicos", ":medicoId", "sedes", ":sedeId"],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "medicos",
+                ":medicoId",
+                "sedes",
+                ":sedeId"
+              ],
               "variable": [
-                { "key": "medicoId", "value": "<_id del médico>" },
-                { "key": "sedeId", "value": "<_id de la sede>" }
+                {
+                  "key": "medicoId",
+                  "value": "<_id del médico>"
+                },
+                {
+                  "key": "sedeId",
+                  "value": "<_id de la sede>"
+                }
               ]
             }
           }
         },
         {
-          "name": "Disponibilidades",
-          "item": [
-            {
-              "name": "Obtener Disponibilidades",
-              "request": {
-                "method": "GET",
-                "header": [],
-                "url": {
-                  "raw": "{{baseUrl}}/medicos/:medicoId/disponibilidades",
-                  "host": [
-                    "{{baseUrl}}"
-                  ],
-                  "path": [
-                    "medicos",
-                    ":medicoId",
-                    "disponibilidades"
-                  ],
-                  "variable": [
-                    {
-                      "key": "medicoId",
-                      "value": "<_id del médico>"
-                    }
-                  ]
-                }
+          "name": "Crear Agenda",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
               }
-            },
-            {
-              "name": "Obtener Disponibilidad por ID",
-              "request": {
-                "method": "GET",
-                "header": [],
-                "url": {
-                  "raw": "{{baseUrl}}/medicos/:medicoId/disponibilidades/:disponibilidadId",
-                  "host": [
-                    "{{baseUrl}}"
-                  ],
-                  "path": [
-                    "medicos",
-                    ":medicoId",
-                    "disponibilidades",
-                    ":disponibilidadId"
-                  ],
-                  "variable": [
-                    {
-                      "key": "medicoId",
-                      "value": "<_id del médico>"
-                    },
-                    {
-                      "key": "disponibilidadId",
-                      "value": "<_id de la disponibilidad>"
-                    }
-                  ]
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/medicos/:medicoId/agenda",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "medicos",
+                ":medicoId",
+                "agenda"
+              ],
+              "variable": [
+                {
+                  "key": "medicoId",
+                  "value": "<_id del médico>"
                 }
-              }
+              ]
             },
-            {
-              "name": "Crear Disponibilidad",
-              "request": {
-                "method": "POST",
-                "header": [
-                  {
-                    "key": "Content-Type",
-                    "value": "application/json"
-                  }
-                ],
-                "url": {
-                  "raw": "{{baseUrl}}/medicos/:medicoId/disponibilidades",
-                  "host": [
-                    "{{baseUrl}}"
-                  ],
-                  "path": [
-                    "medicos",
-                    ":medicoId",
-                    "disponibilidades"
-                  ],
-                  "variable": [
-                    {
-                      "key": "medicoId",
-                      "value": "<_id del médico>"
-                    }
-                  ]
-                },
-                "body": {
-                  "mode": "raw",
-                  "raw": "{\n    \"nuevaDisponibilidad\": {\n        \"diaSemana\": \"LUNES\",\n        \"horaInicio\": \"09:00\",\n        \"horaFin\": \"13:00\"\n    }\n}",
-                  "options": {
-                    "raw": {
-                      "language": "json"
-                    }
-                  }
-                }
-              }
-            },
-            {
-              "name": "Editar Disponibilidad",
-              "request": {
-                "method": "PATCH",
-                "header": [
-                  {
-                    "key": "Content-Type",
-                    "value": "application/json"
-                  }
-                ],
-                "url": {
-                  "raw": "{{baseUrl}}/medicos/:medicoId/disponibilidades/:disponibilidadId",
-                  "host": [
-                    "{{baseUrl}}"
-                  ],
-                  "path": [
-                    "medicos",
-                    ":medicoId",
-                    "disponibilidades",
-                    ":disponibilidadId"
-                  ],
-                  "variable": [
-                    {
-                      "key": "medicoId",
-                      "value": "<_id del médico>"
-                    },
-                    {
-                      "key": "disponibilidadId",
-                      "value": "<_id de la disponibilidad>"
-                    }
-                  ]
-                },
-                "body": {
-                  "mode": "raw",
-                  "raw": "{\n    \"nuevaDisponibilidad\": {\n        \"diaSemana\": \"LUNES\",\n        \"horaInicio\": \"09:00\",\n        \"horaFin\": \"13:00\"\n    }\n}",
-                  "options": {
-                    "raw": {
-                      "language": "json"
-                    }
-                  }
-                }
-              }
-            },
-            {
-              "name": "Eliminar Disponibilidad",
-              "request": {
-                "method": "DELETE",
-                "header": [],
-                "url": {
-                  "raw": "{{baseUrl}}/medicos/:medicoId/disponibilidades/:disponibilidadId",
-                  "host": [
-                    "{{baseUrl}}"
-                  ],
-                  "path": [
-                    "medicos",
-                    ":medicoId",
-                    "disponibilidades",
-                    ":disponibilidadId"
-                  ],
-                  "variable": [
-                    {
-                      "key": "medicoId",
-                      "value": "<_id del médico>"
-                    },
-                    {
-                      "key": "disponibilidadId",
-                      "value": "<_id de la disponibilidad>"
-                    }
-                  ]
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"practicaId\": \"<_id de la práctica>\",\n    \"sedeId\": \"<_id de la sede>\",\n    \"disponibilidad\": {\n        \"diaSemana\": \"LUNES\",\n        \"horaInicio\": \"09:00\",\n        \"horaFin\": \"13:00\",\n        \"fechaFin\": \"2026-12-31T00:00:00.000Z\"\n    }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
                 }
               }
             }
-          ]
+          }
         }
       ]
     },
@@ -1198,7 +1175,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"medicoId\": \"<_id del médico>\",\n    \"pacienteId\": \"<_id del paciente>\",\n    \"fechaHora\": \"2026-12-20T10:30:00\",\n    \"sedeId\": \"<_id de la sede>\",\n    \"especialidadId\": \"<_id de la especialidad>\",\n    \"practicaId\": \"<_id de la práctica>\"\n}",
+              "raw": "{\n    \"turnoId\": \"<_id del turno disponible>\",\n    \"pacienteId\": \"<_id del paciente>\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -1313,7 +1290,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"pacienteId\": \"<_id del paciente>\",\n    \"nuevaFechaHora\": \"2026-12-25T10:30:00\"\n}",
+              "raw": "{\n    \"pacienteId\": \"<_id del paciente>\",\n    \"nuevoTurnoId\": \"<_id del turno disponible>\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -1352,7 +1329,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"medicoId\": \"<_id del médico>\",\n    \"nuevaFechaHora\": \"2026-12-25T10:30:00\"\n}",
+              "raw": "{\n    \"nuevoTurnoId\": \"<_id del turno disponible>\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -1438,6 +1415,94 @@
                   "language": "json"
                 }
               }
+            }
+          }
+        },
+        {
+          "name": "Marcar Turno como Realizado",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/turnos/:turnoId/realizado",
+              "host": ["{{baseUrl}}"],
+              "path": ["turnos", ":turnoId", "realizado"],
+              "variable": [
+                {
+                  "key": "turnoId",
+                  "value": "<_id del turno>"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Buscar Turnos Disponibles",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/turnos/buscar/:pacienteId?especialidadId=<_id>&fechaDesde=2026-05-10&fechaHasta=2026-06-10&sortBy=fechaHora&sortOrder=asc&page=1&limit=10",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "turnos",
+                "buscar",
+                ":pacienteId"
+              ],
+              "variable": [
+                {
+                  "key": "pacienteId",
+                  "value": "<_id del paciente>"
+                }
+              ],
+              "query": [
+                {
+                  "key": "medicoId",
+                  "value": "<_id del médico>",
+                  "disabled": true
+                },
+                {
+                  "key": "especialidadId",
+                  "value": "<_id de la especialidad>",
+                  "disabled": true
+                },
+                {
+                  "key": "practicaId",
+                  "value": "<_id de la práctica>",
+                  "disabled": true
+                },
+                {
+                  "key": "sedeId",
+                  "value": "<_id de la sede>",
+                  "disabled": true
+                },
+                {
+                  "key": "fechaDesde",
+                  "value": "2026-05-10"
+                },
+                {
+                  "key": "fechaHasta",
+                  "value": "2026-06-10"
+                },
+                {
+                  "key": "sortBy",
+                  "value": "fechaHora"
+                },
+                {
+                  "key": "sortOrder",
+                  "value": "asc"
+                },
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
             }
           }
         }

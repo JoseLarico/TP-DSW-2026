@@ -1,4 +1,5 @@
-import PracticaModel from '../models/mongoose/practica.model.js';
+﻿import PracticaModel from '../models/mongoose/practica.model.js';
+import { NotFoundError } from '../error/appError.js';
 
 export class PracticaRepository {
 
@@ -13,7 +14,7 @@ export class PracticaRepository {
 
     async findById(id) {
         const practica = await PracticaModel.findById(id);
-        if (!practica) throw new Error('Práctica no encontrada');
+        if (!practica) throw new NotFoundError('Práctica no encontrada');
         return practica;
     }
 

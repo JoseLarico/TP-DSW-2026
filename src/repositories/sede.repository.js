@@ -1,4 +1,5 @@
-import SedeModel from '../models/mongoose/sede.model.js';
+﻿import SedeModel from '../models/mongoose/sede.model.js';
+import { NotFoundError } from '../error/appError.js';
 
 export class SedeRepository {
 
@@ -13,7 +14,7 @@ export class SedeRepository {
 
     async findById(id) {
         const sede = await SedeModel.findById(id);
-        if (!sede) throw new Error('Sede no encontrada');
+        if (!sede) throw new NotFoundError('Sede no encontrada');
         return sede;
     }
 

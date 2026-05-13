@@ -1,4 +1,4 @@
-/*
+﻿/*
 El service es la capa de lógica de negocio. Recibe pedidos del controller,
 hace las validaciones necesarias y coordina las operaciones con el repository.
 
@@ -16,10 +16,16 @@ import { MedicoRepository } from "../repositories/medico.repository.js";
 import { PacienteRepository } from "../repositories/paciente.repository.js";
 import { NotificacionRepository } from "../repositories/notificacion.repository.js";
 import { Turno } from "../models/turno.model.js";
+import { ValidationError, ConflictError } from "../error/appError.js";
 import dayjs from "dayjs";
 
 export class TurnoService {
-    constructor({ turnoRepository = TurnoRepository.instance(), medicoRepository = MedicoRepository.instance(), pacienteRepository = PacienteRepository.instance(), notificacionRepository = NotificacionRepository.instance() } = {}) {
+    constructor({
+        turnoRepository = TurnoRepository.instance(),
+        medicoRepository = MedicoRepository.instance(),
+        pacienteRepository = PacienteRepository.instance(),
+        notificacionRepository = NotificacionRepository.instance()
+    } = {}) {
         this.turnoRepository = turnoRepository;
         this.medicoRepository = medicoRepository;
         this.pacienteRepository = pacienteRepository;
@@ -64,88 +70,58 @@ export class TurnoService {
         return this._instance;
     }
 
-    async altaTurno(medicoId, pacienteId, fechaHora, sedeId, especialidadId, practicaId) {
-        const medico = await this.medicoRepository.findById(medicoId);
-
-        if (especialidadId && !medico.especialidades.some(e => e._id.toString() === especialidadId)) {
-            throw new Error("El médico no tiene esa especialidad");
-        }
-        if (practicaId && !medico.practicas.some(p => p._id.toString() === practicaId)) {
-            throw new Error("El médico no tiene esa práctica");
-        }
-        if (sedeId && !medico.sedes.some(s => s._id.toString() === sedeId)) {
-            throw new Error("El médico no atiende en esa sede");
-        }
-
-        const fecha = dayjs(fechaHora);
-        if (fecha.isBefore(dayjs())) throw new Error("No se puede reservar un turno en una fecha pasada");
-
-        if (!this.medicoEstaDisponible(medico, fecha)) throw new Error("El médico no está disponible en ese horario");
-
-        const turnoExistente = await this.turnoRepository.findByMedicoAndFechaHora(medicoId, fechaHora);
-        if (turnoExistente) throw new Error("El médico ya tiene un turno asignado en ese horario");
-
-        const nuevoTurno = new Turno(medicoId, pacienteId, new Date(fechaHora), sedeId, especialidadId, practicaId, EstadoTurno.RESERVADO, [], 0);
-        return await this.turnoRepository.create(nuevoTurno);
-    }
-
-    medicoEstaDisponible(medico, fecha) {
-        const diasSemana = ['DOMINGO', 'LUNES', 'MARTES', 'MIERCOLES', 'JUEVES', 'VIERNES', 'SABADO'];
-        const diaSemana = diasSemana[fecha.day()];
-        const hora = fecha.format("HH:mm");
-        return medico.disponibilidades.some(d =>
-            d.diaSemana === diaSemana &&
-            d.horaInicio <= hora &&
-            d.horaFin > hora
-        );
-    }
-
-    async cambiarFechaPaciente(turnoId, pacienteId, nuevaFechaHora) {
+    async altaTurno(turnoId, pacienteId) {
         const turno = await this.turnoRepository.findById(turnoId);
-        if (turno.paciente.toString() !== pacienteId) throw new Error("El paciente no pertenece a este turno");
-        if (turno.estado !== EstadoTurno.RESERVADO) throw new Error("Solo se puede cambiar un turno reservado");
-        if (dayjs(turno.fechaHora).diff(dayjs(), 'minute') <= 60) throw new Error("No se puede cambiar el turno con menos de 1 hora de anticipación");
+        if (turno.estado !== EstadoTurno.DISPONIBLE) throw new ValidationError("El turno no está disponible");
 
-        const fecha = dayjs(nuevaFechaHora);
-        if (fecha.isBefore(dayjs())) throw new Error("La nueva fecha debe ser futura");
+        await this.pacienteRepository.findById(pacienteId);
+
+        turno.paciente = pacienteId;
+        turno.estado = EstadoTurno.RESERVADO;
+
+        const turnoGuardado = await this.turnoRepository.save(turno);
+        await this.turnoRepository.deleteDisponiblesByMedicoAndFechaHora(turno.medico, turno.fechaHora);
+        return turnoGuardado;
+    }
+
+    async cambiarFechaPaciente(turnoId, pacienteId, nuevoTurnoId) {
+        const turno = await this.turnoRepository.findById(turnoId);
+        if (turno.paciente.toString() !== pacienteId) throw new ValidationError("El paciente no pertenece a este turno");
+        if (turno.estado !== EstadoTurno.RESERVADO) throw new ValidationError("Solo se puede cambiar un turno reservado");
+        if (dayjs(turno.fechaHora).diff(dayjs(), 'minute') <= 60) throw new ValidationError("No se puede cambiar el turno con menos de 1 hora de anticipación");
+
+        const turnoNuevo = await this.turnoRepository.findById(nuevoTurnoId);
+        if (turnoNuevo.estado !== EstadoTurno.DISPONIBLE) throw new ValidationError("El turno seleccionado no está disponible");
+        if (dayjs(turnoNuevo.fechaHora).isBefore(dayjs())) throw new ValidationError("La nueva fecha debe ser futura");
 
         const medico = await this.medicoRepository.findById(turno.medico);
-        if (!this.medicoEstaDisponible(medico, fecha)) throw new Error("El médico no está disponible en ese horario");
-
-        const turnoConflicto = await this.turnoRepository.findByMedicoAndFechaHora(turno.medico, nuevaFechaHora);
-        if (turnoConflicto && turnoConflicto._id.toString() !== turnoId) throw new Error("El médico ya tiene un turno en ese horario");
-
         const fechaOriginal = turno.fechaHora;
-        turno.fechaHora = new Date(nuevaFechaHora);
+        turno.fechaHora = turnoNuevo.fechaHora;
         const turnoActualizado = await this.turnoRepository.save(turno);
+        await this.turnoRepository.deleteDisponiblesByMedicoAndFechaHora(turno.medico, turnoNuevo.fechaHora);
 
         await this.notificacionRepository.create({
             destinatario: medico.usuario._id,
             remitente: await this.#usuarioIdDePaciente(turno.paciente),
-            mensaje: `El paciente cambió el turno del ${dayjs(fechaOriginal).format("DD/MM/YYYY HH:mm")} al ${fecha.format("DD/MM/YYYY HH:mm")}`,
+            mensaje: `El paciente cambió el turno del ${dayjs(fechaOriginal).format("DD/MM/YYYY HH:mm")} al ${dayjs(turnoNuevo.fechaHora).format("DD/MM/YYYY HH:mm")}`,
             fechaHoraCreacion: new Date()
         });
 
         return turnoActualizado;
     }
 
-    async proponerCambioFechaMedico(turnoId, medicoId, nuevaFechaHora) {
+    async proponerCambioFechaMedico(turnoId, nuevoTurnoId) {
         const turno = await this.turnoRepository.findById(turnoId);
-        if (turno.medico.toString() !== medicoId) throw new Error("El médico no pertenece a este turno");
-        if (turno.estado !== EstadoTurno.RESERVADO) throw new Error("Solo se puede solicitar cambio en turnos reservados");
-        if (turno.solicitudCambioFecha?.estado === EstadoSolicitudCambio.PENDIENTE) throw new Error("Ya existe una solicitud de cambio pendiente");
+        if (turno.estado !== EstadoTurno.RESERVADO) throw new ValidationError("Solo se puede solicitar cambio en turnos reservados");
+        if (turno.solicitudCambioFecha?.estado === EstadoSolicitudCambio.PENDIENTE) throw new ConflictError("Ya existe una solicitud de cambio pendiente");
 
-        const fecha = dayjs(nuevaFechaHora);
-        if (fecha.isBefore(dayjs())) throw new Error("La nueva fecha debe ser futura");
+        const turnoNuevo = await this.turnoRepository.findById(nuevoTurnoId);
+        if (turnoNuevo.estado !== EstadoTurno.DISPONIBLE) throw new ValidationError("El turno seleccionado no está disponible");
+        if (dayjs(turnoNuevo.fechaHora).isBefore(dayjs())) throw new ValidationError("La nueva fecha debe ser futura");
 
-        const medico = await this.medicoRepository.findById(medicoId);
-        if (!this.medicoEstaDisponible(medico, fecha)) throw new Error("El médico no está disponible en ese horario");
-
-        const turnoConflicto = await this.turnoRepository.findByMedicoAndFechaHora(medicoId, nuevaFechaHora);
-        if (turnoConflicto && turnoConflicto._id.toString() !== turnoId) throw new Error("El médico ya tiene un turno en ese horario");
-
+        const medico = await this.medicoRepository.findById(turno.medico);
         turno.solicitudCambioFecha = {
-            nuevaFechaHora: new Date(nuevaFechaHora),
+            nuevaFechaHora: turnoNuevo.fechaHora,
             solicitante: 'MEDICO',
             estado: EstadoSolicitudCambio.PENDIENTE
         };
@@ -154,7 +130,7 @@ export class TurnoService {
         await this.notificacionRepository.create({
             destinatario: await this.#usuarioIdDePaciente(turno.paciente),
             remitente: medico.usuario._id,
-            mensaje: `El médico propone cambiar el turno del ${dayjs(turno.fechaHora).format("DD/MM/YYYY HH:mm")} al ${fecha.format("DD/MM/YYYY HH:mm")}`,
+            mensaje: `El médico propone cambiar el turno del ${dayjs(turno.fechaHora).format("DD/MM/YYYY HH:mm")} al ${dayjs(turnoNuevo.fechaHora).format("DD/MM/YYYY HH:mm")}`,
             fechaHoraCreacion: new Date()
         });
 
@@ -164,22 +140,23 @@ export class TurnoService {
     async confirmarCambioFechaPaciente(turnoId, pacienteId) {
         const turno = await this.turnoRepository.findById(turnoId);
         if (!turno.solicitudCambioFecha || turno.solicitudCambioFecha.estado !== EstadoSolicitudCambio.PENDIENTE) {
-            throw new Error("No hay solicitud de cambio pendiente");
+            throw new ValidationError("No hay solicitud de cambio pendiente");
         }
-        if (turno.paciente.toString() !== pacienteId) throw new Error("El paciente no pertenece a este turno");
-        if (turno.solicitudCambioFecha.solicitante !== 'MEDICO') throw new Error("No hay propuesta del médico pendiente de confirmación");
+        if (turno.paciente.toString() !== pacienteId) throw new ValidationError("El paciente no pertenece a este turno");
+        if (turno.solicitudCambioFecha.solicitante !== 'MEDICO') throw new ValidationError("No hay propuesta del médico pendiente de confirmación");
 
         const nuevaFecha = dayjs(turno.solicitudCambioFecha.nuevaFechaHora);
+        const nuevaFechaHora = turno.solicitudCambioFecha.nuevaFechaHora;
+
+        const turnoDisponible = await this.turnoRepository.findDisponibleByMedicoAndFechaHora(turno.medico, nuevaFechaHora);
+        if (!turnoDisponible) throw new ValidationError("El médico ya no está disponible en ese horario");
+
         const medico = await this.medicoRepository.findById(turno.medico);
-        if (!this.medicoEstaDisponible(medico, nuevaFecha)) throw new Error("El médico ya no está disponible en ese horario");
-
-        const turnoConflicto = await this.turnoRepository.findByMedicoAndFechaHora(turno.medico, turno.solicitudCambioFecha.nuevaFechaHora);
-        if (turnoConflicto && turnoConflicto._id.toString() !== turnoId) throw new Error("El médico ya tiene un turno en ese horario");
-
         const fechaOriginal = turno.fechaHora;
-        turno.fechaHora = turno.solicitudCambioFecha.nuevaFechaHora;
+        turno.fechaHora = nuevaFechaHora;
         turno.solicitudCambioFecha.estado = EstadoSolicitudCambio.CONFIRMADA;
         const turnoActualizado = await this.turnoRepository.save(turno);
+        await this.turnoRepository.deleteDisponiblesByMedicoAndFechaHora(turno.medico, nuevaFechaHora);
 
         await this.notificacionRepository.create({
             destinatario: medico.usuario._id,
@@ -194,10 +171,10 @@ export class TurnoService {
     async rechazarCambioFechaPaciente(turnoId, pacienteId) {
         const turno = await this.turnoRepository.findById(turnoId);
         if (!turno.solicitudCambioFecha || turno.solicitudCambioFecha.estado !== EstadoSolicitudCambio.PENDIENTE) {
-            throw new Error("No hay solicitud de cambio pendiente");
+            throw new ValidationError("No hay solicitud de cambio pendiente");
         }
-        if (turno.paciente.toString() !== pacienteId) throw new Error("El paciente no pertenece a este turno");
-        if (turno.solicitudCambioFecha.solicitante !== 'MEDICO') throw new Error("No hay propuesta del médico pendiente de confirmación");
+        if (turno.paciente.toString() !== pacienteId) throw new ValidationError("El paciente no pertenece a este turno");
+        if (turno.solicitudCambioFecha.solicitante !== 'MEDICO') throw new ValidationError("No hay propuesta del médico pendiente de confirmación");
 
         turno.solicitudCambioFecha.estado = EstadoSolicitudCambio.RECHAZADA;
         const turnoActualizado = await this.turnoRepository.save(turno);
@@ -212,6 +189,25 @@ export class TurnoService {
         return turnoActualizado;
     }
 
+    async consultarDisponibilidad(medicoId, { especialidadId, practicaId, fechaDesde, fechaHasta, page, limit }) {
+        const medico = await this.medicoRepository.findById(medicoId);
+        if (especialidadId && !medico.especialidades.some(e => e._id.toString() === especialidadId)) {
+            throw new ValidationError('El médico no tiene esa especialidad');
+        }
+        if (practicaId && !medico.practicas.some(p => p._id.toString() === practicaId)) {
+            throw new ValidationError('El médico no tiene esa práctica');
+        }
+        return await this.turnoRepository.buscarDisponibles({ medicoId, especialidadId, practicaId, fechaDesde, fechaHasta, page, limit });
+    }
+
+    async marcarRealizado(turnoId) {
+        const turno = await this.turnoRepository.findById(turnoId);
+        if (turno.estado !== EstadoTurno.RESERVADO) throw new ValidationError("Solo se puede marcar como realizado un turno reservado");
+        turno.estado = EstadoTurno.REALIZADO;
+        turno.historialEstados?.push({ fechaHoraIngreso: new Date(), estado: EstadoTurno.REALIZADO });
+        return await this.turnoRepository.save(turno);
+    }
+
     async historialPorPaciente(pacienteId, medicoId = null) {
         return await this.turnoRepository.findByPaciente(pacienteId, medicoId);
     }
@@ -222,7 +218,7 @@ export class TurnoService {
 
     async cancelarPorPaciente(turnoId, pacienteId, motivo) {
         const turno = await this.turnoRepository.findById(turnoId);
-        if (turno.paciente.toString() !== pacienteId) throw new Error("El paciente no pertenece a este turno");
+        if (turno.paciente.toString() !== pacienteId) throw new ValidationError("El paciente no pertenece a este turno");
         await this.#cancelar(turno, motivo);
         await this.notificacionRepository.create({
             destinatario: await this.#usuarioIdDeMedico(turno.medico),
@@ -235,7 +231,7 @@ export class TurnoService {
 
     async cancelarPorMedico(turnoId, medicoId, motivo) {
         const turno = await this.turnoRepository.findById(turnoId);
-        if (turno.medico.toString() !== medicoId) throw new Error("El médico no pertenece a este turno");
+        if (turno.medico.toString() !== medicoId) throw new ValidationError("El médico no pertenece a este turno");
         await this.#cancelar(turno, motivo);
         await this.notificacionRepository.create({
             destinatario: await this.#usuarioIdDePaciente(turno.paciente),
@@ -248,10 +244,10 @@ export class TurnoService {
 
     async #cancelar(turno, motivo) {
         if (turno.estado === EstadoTurno.CANCELADO) {
-            throw new Error("El turno ya se encuentra cancelado");
+            throw new ValidationError("El turno ya se encuentra cancelado");
         }
         if (dayjs(turno.fechaHora).diff(dayjs(), 'minute') <= 60) {
-            throw new Error("No se puede cancelar el turno con menos de 1 hora de anticipación");
+            throw new ValidationError("No se puede cancelar el turno con menos de 1 hora de anticipación");
         }
         turno.estado = EstadoTurno.CANCELADO;
         turno.historialEstados?.push({ fechaHoraIngreso: new Date(), estado: EstadoTurno.CANCELADO, motivo });

@@ -1,5 +1,4 @@
 import { TurnoService } from "../src/services/turno.service.js"
-import { TurnoRepository } from "../src/repositories/turno.repository.js"
 import { describe, expect, test, beforeEach, jest } from '@jest/globals';
 import { Turno } from "../src/models/turno.model.js";
 import { EstadoTurno } from "../src/enums/estadoTurno.enum.js";
@@ -34,63 +33,178 @@ describe("Turno Service", () => {
     Caso 3: le decís que devuelva un turno válido → simulás el caso exitoso
     */
     describe('altaTurno', () => {
-        test('Si el médico no existe, devuelve error', async () => {
-            turnoService.medicoRepository.findById = jest.fn().mockRejectedValue(new Error("Médico no encontrado")); // Mockear el repository para que findById del medico rechace con error
-            await expect(turnoService.altaTurno(999, { id: 1, nombre: "Paciente 1" }, "2026-04-20T10:00:00", { id: 1 }, { id: 1 })).rejects.toThrow("Médico no encontrado"); // Verificar que al llamar a altaTurno tira el error esperado
+        test('Si el turno no existe entonces devuelve error', async () => {
+            turnoService.turnoRepository.findById = jest.fn().mockRejectedValue(new Error("Turno no encontrado"));
+            await expect(turnoService.altaTurno("turnoId", "pacienteId")).rejects.toThrow("Turno no encontrado");
         })
 
-        test('Si el médico no está disponible en ese horario, devuelve error', async () => {
-            const proximoMiercoles = dayjs().add(1, 'week').day(3).hour(14).minute(0).second(0); // Próximo miércoles a las 14:00 (fuera de disponibilidad del médico)
-            const medicoSinDisponibilidad = {
-                id: 1,
-                especialidades: [],
-                practicas: [],
-                sedes: [],
-                disponibilidades: [
-                    { diaSemana: 'LUNES', horaInicio: '08:00', horaFin: '12:00' }
-                ]
-            };
-            turnoService.medicoRepository.findById = jest.fn().mockResolvedValue(medicoSinDisponibilidad); // Mockear el repository para que findById del medico devuelva un medico sin esa disponibilidad
-            await expect(turnoService.altaTurno(1, { id: 1, nombre: "Paciente 1" }, proximoMiercoles.toDate(), null, null)).rejects.toThrow("El médico no está disponible en ese horario"); // Verificar que al llamar a altaTurno tira el error esperado
+        test('Si el turno no está disponible entonces devuelve error', async () => {
+            const turnoReservado = { medico: "medicoId", fechaHora: new Date("2026-04-20T10:00:00"), estado: EstadoTurno.RESERVADO };
+            turnoService.turnoRepository.findById = jest.fn().mockResolvedValue(turnoReservado);
+            await expect(turnoService.altaTurno("turnoId", "pacienteId")).rejects.toThrow("El turno no está disponible");
         })
 
-        test('Si ya existe un turno para ese médico en esa fecha/hora, devuelve error', async () => {
-            const proximoLunes = dayjs().add(1, 'week').day(1).hour(10).minute(0).second(0); // Próximo lunes a las 10:00
-            const medicoConDisponibilidad = {
-                id: 1,
-                especialidades: [],
-                practicas: [],
-                sedes: [],
-                disponibilidades: [
-                    { diaSemana: 'LUNES', horaInicio: '08:00', horaFin: '12:00' }
-                ]
-            };
-            turnoService.medicoRepository.findById = jest.fn().mockResolvedValue(medicoConDisponibilidad); // Mockear el medico para que exista y tenga disponibilidad
-            turnoService.turnoRepository.findByMedicoAndFechaHora = jest.fn().mockResolvedValue({ id: 1 }); // Mockear findByMedicoAndFechaHora para que devuelva un turno existente
-            await expect(turnoService.altaTurno(1, { id: 1, nombre: "Paciente 1" }, proximoLunes.toDate(), null, null)).rejects.toThrow("El médico ya tiene un turno asignado en ese horario"); // Verificar que al llamar a altaTurno tira el error esperado
-        })
-
-        test('Si todo es válido, se crea el turno exitosamente', async () => {
-            const proximoLunes = dayjs().add(1, 'week').day(1).hour(10).minute(0).second(0); // Próximo lunes a las 10:00
-            const medicoConDisponibilidad = { // Mockear el medico para que exista y tenga disponibilidad
-                id: 1,
-                especialidades: [],
-                practicas: [],
-                sedes: [],
-                disponibilidades: [
-                    { diaSemana: 'LUNES', horaInicio: '08:00', horaFin: '12:00' }
-                ]
-            };
-            turnoService.medicoRepository.findById = jest.fn().mockResolvedValue(medicoConDisponibilidad); // Mockear el medico para que exista y tenga disponibilidad
-            turnoService.turnoRepository.findByMedicoAndFechaHora = jest.fn().mockResolvedValue(undefined); // Mockear findByMedicoAndFechaHora para que devuelva undefined (no existe turno)
-            turnoService.turnoRepository.create = jest.fn().mockImplementation((turno) => { // Mockear create para que devuelva el turno creado
-                turno.id = 2;
-                return Promise.resolve(turno);
-            });
-            const turnoCreado = await turnoService.altaTurno(1, { id: 1, nombre: "Paciente 1" }, proximoLunes.toDate(), null, null);
-            expect(turnoCreado.estado).toBe(EstadoTurno.RESERVADO); // Verificar que el turno creado tiene estado RESERVADO
+        test('Si el turno está disponible se reserva exitosamente', async () => {
+            const turnoDisponible = { medico: "medicoId", fechaHora: new Date("2026-04-20T10:00:00"), estado: EstadoTurno.DISPONIBLE };
+            turnoService.turnoRepository.findById = jest.fn().mockResolvedValue(turnoDisponible);
+            turnoService.turnoRepository.save = jest.fn().mockImplementation(t => Promise.resolve(t));
+            turnoService.turnoRepository.deleteDisponiblesByMedicoAndFechaHora = jest.fn().mockResolvedValue();
+            turnoService.pacienteRepository.findById = jest.fn().mockResolvedValue({ _id: "pacienteId" });
+            const resultado = await turnoService.altaTurno("turnoId", "pacienteId");
+            expect(resultado.estado).toBe(EstadoTurno.RESERVADO);
+            expect(resultado.paciente).toBe("pacienteId");
         })
     })
+
+    describe('marcarRealizado', () => {
+        test('Si el turno no existe entonces devuelve error', async () => {
+            turnoService.turnoRepository.findById = jest.fn().mockRejectedValue(new Error("Turno no encontrado"));
+            await expect(turnoService.marcarRealizado("turnoId")).rejects.toThrow("Turno no encontrado");
+        });
+
+        test('Si el turno no está reservado entonces devuelve error', async () => {
+            const turno = { estado: EstadoTurno.CANCELADO, historialEstados: [] };
+            turnoService.turnoRepository.findById = jest.fn().mockResolvedValue(turno);
+            await expect(turnoService.marcarRealizado("turnoId")).rejects.toThrow("Solo se puede marcar como realizado un turno reservado");
+        });
+
+        test('Si el turno está reservado lo marca como realizado', async () => {
+            const turno = { estado: EstadoTurno.RESERVADO, historialEstados: [] };
+            turnoService.turnoRepository.findById = jest.fn().mockResolvedValue(turno);
+            turnoService.turnoRepository.save = jest.fn().mockImplementation(t => Promise.resolve(t));
+            const resultado = await turnoService.marcarRealizado("turnoId");
+            expect(resultado.estado).toBe(EstadoTurno.REALIZADO);
+        });
+    });
+
+    describe('cambiarFechaPaciente', () => {
+        test('Si el paciente no pertenece al turno entonces devuelve error', async () => {
+            const turno = { paciente: { toString: () => "otroPaciente" }, estado: EstadoTurno.RESERVADO, fechaHora: dayjs().add(90, 'minute').toDate() };
+            turnoService.turnoRepository.findById = jest.fn().mockResolvedValue(turno);
+            await expect(turnoService.cambiarFechaPaciente("turnoId", "pacienteId", "nuevoTurnoId")).rejects.toThrow("El paciente no pertenece a este turno");
+        });
+
+        test('Si el turno no está reservado entonces devuelve error', async () => {
+            const turno = { paciente: { toString: () => "pacienteId" }, estado: EstadoTurno.CANCELADO, fechaHora: dayjs().add(90, 'minute').toDate() };
+            turnoService.turnoRepository.findById = jest.fn().mockResolvedValue(turno);
+            await expect(turnoService.cambiarFechaPaciente("turnoId", "pacienteId", "nuevoTurnoId")).rejects.toThrow("Solo se puede cambiar un turno reservado");
+        });
+
+        test('Si faltan menos de 60 minutos entonces devuelve error', async () => {
+            const turno = { paciente: { toString: () => "pacienteId" }, estado: EstadoTurno.RESERVADO, fechaHora: dayjs().add(30, 'minute').toDate() };
+            turnoService.turnoRepository.findById = jest.fn().mockResolvedValue(turno);
+            await expect(turnoService.cambiarFechaPaciente("turnoId", "pacienteId", "nuevoTurnoId")).rejects.toThrow("No se puede cambiar el turno con menos de 1 hora de anticipación");
+        });
+
+        test('Si el nuevo turno no está disponible entonces devuelve error', async () => {
+            const turno = { paciente: { toString: () => "pacienteId" }, estado: EstadoTurno.RESERVADO, fechaHora: dayjs().add(90, 'minute').toDate(), medico: "medicoId" };
+            const turnoNuevo = { estado: EstadoTurno.RESERVADO, fechaHora: dayjs().add(2, 'day').toDate() };
+            turnoService.turnoRepository.findById = jest.fn()
+                .mockResolvedValueOnce(turno)
+                .mockResolvedValueOnce(turnoNuevo);
+            await expect(turnoService.cambiarFechaPaciente("turnoId", "pacienteId", "nuevoTurnoId")).rejects.toThrow("El turno seleccionado no está disponible");
+        });
+
+        test('Si los datos son válidos cambia la fecha y notifica al médico', async () => {
+            const turno = { paciente: { toString: () => "pacienteId" }, estado: EstadoTurno.RESERVADO, fechaHora: dayjs().add(90, 'minute').toDate(), medico: "medicoId" };
+            const turnoNuevo = { estado: EstadoTurno.DISPONIBLE, fechaHora: dayjs().add(2, 'day').toDate() };
+            turnoService.turnoRepository.findById = jest.fn()
+                .mockResolvedValueOnce(turno)
+                .mockResolvedValueOnce(turnoNuevo);
+            turnoService.turnoRepository.save = jest.fn().mockImplementation(t => Promise.resolve(t));
+            turnoService.turnoRepository.deleteDisponiblesByMedicoAndFechaHora = jest.fn().mockResolvedValue();
+            turnoService.medicoRepository.findById = jest.fn().mockResolvedValue({ usuario: { _id: "usuarioMedicoId" } });
+            turnoService.pacienteRepository.findById = jest.fn().mockResolvedValue({ usuario: { _id: "usuarioPacienteId" } });
+            turnoService.notificacionRepository.create = jest.fn().mockResolvedValue({});
+            await turnoService.cambiarFechaPaciente("turnoId", "pacienteId", "nuevoTurnoId");
+            expect(turnoService.notificacionRepository.create).toHaveBeenCalledWith(expect.objectContaining({ destinatario: "usuarioMedicoId" }));
+        });
+    });
+
+    describe('proponerCambioFechaMedico', () => {
+        test('Si el turno no está reservado entonces devuelve error', async () => {
+            const turno = { medico: { toString: () => "medicoId" }, estado: EstadoTurno.CANCELADO, solicitudCambioFecha: null };
+            turnoService.turnoRepository.findById = jest.fn().mockResolvedValue(turno);
+            await expect(turnoService.proponerCambioFechaMedico("turnoId", "nuevoTurnoId")).rejects.toThrow("Solo se puede solicitar cambio en turnos reservados");
+        });
+
+        test('Si ya existe una solicitud pendiente entonces devuelve error', async () => {
+            const turno = { medico: { toString: () => "medicoId" }, estado: EstadoTurno.RESERVADO, solicitudCambioFecha: { estado: 'PENDIENTE' } };
+            turnoService.turnoRepository.findById = jest.fn().mockResolvedValue(turno);
+            await expect(turnoService.proponerCambioFechaMedico("turnoId", "nuevoTurnoId")).rejects.toThrow("Ya existe una solicitud de cambio pendiente");
+        });
+
+        test('Si el nuevo turno no está disponible entonces devuelve error', async () => {
+            const turno = { medico: { toString: () => "medicoId" }, estado: EstadoTurno.RESERVADO, solicitudCambioFecha: null, paciente: "pacienteId" };
+            const turnoNuevo = { estado: EstadoTurno.RESERVADO, fechaHora: dayjs().add(2, 'day').toDate() };
+            turnoService.turnoRepository.findById = jest.fn()
+                .mockResolvedValueOnce(turno)
+                .mockResolvedValueOnce(turnoNuevo);
+            await expect(turnoService.proponerCambioFechaMedico("turnoId", "nuevoTurnoId")).rejects.toThrow("El turno seleccionado no está disponible");
+        });
+
+        test('Si los datos son válidos crea la solicitud y notifica al paciente', async () => {
+            const turno = { medico: { toString: () => "medicoId" }, estado: EstadoTurno.RESERVADO, solicitudCambioFecha: null, paciente: "pacienteId", fechaHora: dayjs().add(1, 'day').toDate() };
+            const turnoNuevo = { estado: EstadoTurno.DISPONIBLE, fechaHora: dayjs().add(2, 'day').toDate() };
+            turnoService.turnoRepository.findById = jest.fn()
+                .mockResolvedValueOnce(turno)
+                .mockResolvedValueOnce(turnoNuevo);
+            turnoService.turnoRepository.save = jest.fn().mockImplementation(t => Promise.resolve(t));
+            turnoService.medicoRepository.findById = jest.fn().mockResolvedValue({ usuario: { _id: "usuarioMedicoId" } });
+            turnoService.pacienteRepository.findById = jest.fn().mockResolvedValue({ usuario: { _id: "usuarioPacienteId" } });
+            turnoService.notificacionRepository.create = jest.fn().mockResolvedValue({});
+            await turnoService.proponerCambioFechaMedico("turnoId", "nuevoTurnoId");
+            expect(turnoService.notificacionRepository.create).toHaveBeenCalledWith(expect.objectContaining({ destinatario: "usuarioPacienteId" }));
+        });
+    });
+
+    describe('confirmarCambioFechaPaciente', () => {
+        test('Si no hay solicitud pendiente entonces devuelve error', async () => {
+            const turno = { solicitudCambioFecha: null, paciente: { toString: () => "pacienteId" } };
+            turnoService.turnoRepository.findById = jest.fn().mockResolvedValue(turno);
+            await expect(turnoService.confirmarCambioFechaPaciente("turnoId", "pacienteId")).rejects.toThrow("No hay solicitud de cambio pendiente");
+        });
+
+        test('Si el paciente no pertenece al turno entonces devuelve error', async () => {
+            const turno = { solicitudCambioFecha: { estado: 'PENDIENTE', solicitante: 'MEDICO' }, paciente: { toString: () => "otroPaciente" } };
+            turnoService.turnoRepository.findById = jest.fn().mockResolvedValue(turno);
+            await expect(turnoService.confirmarCambioFechaPaciente("turnoId", "pacienteId")).rejects.toThrow("El paciente no pertenece a este turno");
+        });
+
+        test('Si el nuevo slot ya no está disponible entonces devuelve error', async () => {
+            const nuevaFechaHora = dayjs().add(2, 'day').toDate();
+            const turno = { solicitudCambioFecha: { estado: 'PENDIENTE', solicitante: 'MEDICO', nuevaFechaHora }, paciente: { toString: () => "pacienteId" }, medico: "medicoId", fechaHora: dayjs().add(1, 'day').toDate() };
+            turnoService.turnoRepository.findById = jest.fn().mockResolvedValue(turno);
+            turnoService.turnoRepository.findDisponibleByMedicoAndFechaHora = jest.fn().mockResolvedValue(null);
+            turnoService.medicoRepository.findById = jest.fn().mockResolvedValue({ usuario: { _id: "usuarioMedicoId" } });
+            await expect(turnoService.confirmarCambioFechaPaciente("turnoId", "pacienteId")).rejects.toThrow("El médico ya no está disponible en ese horario");
+        });
+    });
+
+    describe('rechazarCambioFechaPaciente', () => {
+        test('Si no hay solicitud pendiente entonces devuelve error', async () => {
+            const turno = { solicitudCambioFecha: null, paciente: { toString: () => "pacienteId" } };
+            turnoService.turnoRepository.findById = jest.fn().mockResolvedValue(turno);
+            await expect(turnoService.rechazarCambioFechaPaciente("turnoId", "pacienteId")).rejects.toThrow("No hay solicitud de cambio pendiente");
+        });
+
+        test('Si el paciente no pertenece al turno entonces devuelve error', async () => {
+            const turno = { solicitudCambioFecha: { estado: 'PENDIENTE', solicitante: 'MEDICO' }, paciente: { toString: () => "otroPaciente" } };
+            turnoService.turnoRepository.findById = jest.fn().mockResolvedValue(turno);
+            await expect(turnoService.rechazarCambioFechaPaciente("turnoId", "pacienteId")).rejects.toThrow("El paciente no pertenece a este turno");
+        });
+
+        test('Si los datos son válidos rechaza la solicitud y notifica al médico', async () => {
+            const turno = { solicitudCambioFecha: { estado: 'PENDIENTE', solicitante: 'MEDICO' }, paciente: { toString: () => "pacienteId" }, medico: "medicoId", fechaHora: dayjs().add(1, 'day').toDate() };
+            turnoService.turnoRepository.findById = jest.fn().mockResolvedValue(turno);
+            turnoService.turnoRepository.save = jest.fn().mockImplementation(t => Promise.resolve(t));
+            turnoService.medicoRepository.findById = jest.fn().mockResolvedValue({ usuario: { _id: "usuarioMedicoId" } });
+            turnoService.pacienteRepository.findById = jest.fn().mockResolvedValue({ usuario: { _id: "usuarioPacienteId" } });
+            turnoService.notificacionRepository.create = jest.fn().mockResolvedValue({});
+            await turnoService.rechazarCambioFechaPaciente("turnoId", "pacienteId");
+            expect(turnoService.notificacionRepository.create).toHaveBeenCalledWith(expect.objectContaining({ destinatario: "usuarioMedicoId" }));
+        });
+    });
 
     describe('cancelarPorPaciente', () => {
         test('Si el turno no existe entonces devuelve error', async () => {

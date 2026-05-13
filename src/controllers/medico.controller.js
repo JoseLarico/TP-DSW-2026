@@ -13,187 +13,151 @@ export class MedicoController {
 
     // ── CRUD Médicos ──────────────────────────────────────────────────────────
 
-    async obtenerTodos(req, res) {
+    async obtenerTodos(req, res, next) {
         try {
             const medicos = await this.MedicoService.obtenerTodos();
             res.status(200).json(medicos);
         } catch (error) {
-            res.status(500).json({ error: error.message });
+            next(error);
         }
     }
 
-    async obtenerPorId(req, res) {
+    async obtenerPorId(req, res, next) {
         const { medicoId } = req.params;
         try {
             const medico = await this.MedicoService.obtenerPorId(medicoId);
             res.status(200).json(medico);
         } catch (error) {
-            res.status(404).json({ error: error.message });
+            next(error);
         }
     }
 
-    async crear(req, res) {
+    async crear(req, res, next) {
         try {
             const medico = await this.MedicoService.crear(req.body);
             res.status(201).json(medico);
         } catch (error) {
-            res.status(400).json({ error: error.message });
+            next(error);
         }
     }
 
-    async actualizar(req, res) {
+    async actualizar(req, res, next) {
         const { medicoId } = req.params;
         try {
             const medico = await this.MedicoService.actualizar(medicoId, req.body);
             res.status(200).json(medico);
         } catch (error) {
-            res.status(404).json({ error: error.message });
+            next(error);
         }
     }
 
-    async eliminar(req, res) {
+    async eliminar(req, res, next) {
         const { medicoId } = req.params;
         try {
             await this.MedicoService.eliminar(medicoId);
             res.status(200).json({ message: "Médico eliminado correctamente" });
         } catch (error) {
-            res.status(404).json({ error: error.message });
+            next(error);
         }
     }
 
-    // ── CRUD Disponibilidades ─────────────────────────────────────────────────
+    // ── Agenda ────────────────────────────────────────────────────────────────
 
-    async obtenerDisponibilidades(req, res) {
+    async crearAgenda(req, res, next) {
         const { medicoId } = req.params;
+        const { especialidadId, practicaId, sedeId, disponibilidad } = req.validatedBody;
+        const tipoServicio = especialidadId ? 'especialidad' : 'practica';
+        const servicioId = especialidadId ?? practicaId;
         try {
-            const disponibilidades = await this.MedicoService.obtenerDisponibilidades(medicoId);
-            res.status(200).json(disponibilidades);
+            const turnos = await this.MedicoService.crearAgenda(medicoId, tipoServicio, servicioId, sedeId, disponibilidad);
+            res.status(201).json(turnos);
         } catch (error) {
-            res.status(404).json({ error: error.message });
-        }
-    }
-
-    async obtenerDisponibilidadPorId(req, res) {
-        const { medicoId, disponibilidadId } = req.params;
-        try {
-            const disponibilidad = await this.MedicoService.obtenerDisponibilidadPorId(
-                medicoId,
-                disponibilidadId
-            );
-            res.status(200).json(disponibilidad);
-        } catch (error) {
-            res.status(error.message.includes('no encontrad') ? 404 : 400).json({ error: error.message });
-        }
-    }
-
-    async crearDisponibilidad(req, res) {
-        const { medicoId } = req.params;
-        const { nuevaDisponibilidad } = req.body;
-        try {
-            const disponibilidad = await this.MedicoService.crearDisponibilidad(medicoId, nuevaDisponibilidad);
-            res.status(201).json(disponibilidad);
-        } catch (error) {
-            res.status(400).json({ error: error.message });
-        }
-    }
-
-    async editarDisponibilidad(req, res) {
-        const { medicoId, disponibilidadId } = req.params;
-        const { nuevaDisponibilidad } = req.body;
-        try {
-            const disponibilidad = await this.MedicoService.editarDisponibilidad(
-                medicoId,
-                disponibilidadId,
-                nuevaDisponibilidad
-            );
-            res.status(200).json(disponibilidad);
-        } catch (error) {
-            res.status(400).json({ error: error.message });
-        }
-    }
-
-    async eliminarDisponibilidad(req, res) {
-        const { medicoId, disponibilidadId } = req.params;
-        try {
-            await this.MedicoService.eliminarDisponibilidad(medicoId, disponibilidadId);
-            res.status(200).json({ message: 'Disponibilidad eliminada correctamente' });
-        } catch (error) {
-            res.status(400).json({ error: error.message });
+            next(error);
         }
     }
 
     // ── Gestión de Servicios ──────────────────────────────────────────────────
 
-    async agregarEspecialidad(req, res) {
+    async agregarEspecialidad(req, res, next) {
         const { medicoId } = req.params;
         const { especialidadId } = req.body;
         try {
             const medico = await this.MedicoService.agregarEspecialidad(medicoId, especialidadId);
             res.status(200).json(medico);
         } catch (error) {
-            res.status(400).json({ error: error.message });
+            next(error);
         }
     }
 
-    async eliminarEspecialidad(req, res) {
+    async eliminarEspecialidad(req, res, next) {
         const { medicoId, especialidadId } = req.params;
         try {
             await this.MedicoService.eliminarEspecialidad(medicoId, especialidadId);
             res.status(200).json({ message: 'Especialidad eliminada del médico correctamente' });
         } catch (error) {
-            res.status(400).json({ error: error.message });
+            next(error);
         }
     }
 
-    async agregarPractica(req, res) {
+    async agregarPractica(req, res, next) {
         const { medicoId } = req.params;
         const { practicaId } = req.body;
         try {
             const medico = await this.MedicoService.agregarPractica(medicoId, practicaId);
             res.status(200).json(medico);
         } catch (error) {
-            res.status(400).json({ error: error.message });
+            next(error);
         }
     }
 
-    async eliminarPractica(req, res) {
+    async eliminarPractica(req, res, next) {
         const { medicoId, practicaId } = req.params;
         try {
             await this.MedicoService.eliminarPractica(medicoId, practicaId);
             res.status(200).json({ message: 'Práctica eliminada del médico correctamente' });
         } catch (error) {
-            res.status(400).json({ error: error.message });
+            next(error);
         }
     }
 
-    async agregarSede(req, res) {
+    async agregarSede(req, res, next) {
         const { medicoId } = req.params;
         const { sedeId } = req.body;
         try {
             const medico = await this.MedicoService.agregarSede(medicoId, sedeId);
             res.status(200).json(medico);
         } catch (error) {
-            res.status(400).json({ error: error.message });
+            next(error);
         }
     }
 
-    async eliminarSede(req, res) {
+    async eliminarSede(req, res, next) {
         const { medicoId, sedeId } = req.params;
         try {
             await this.MedicoService.eliminarSede(medicoId, sedeId);
             res.status(200).json({ message: 'Sede eliminada del médico correctamente' });
         } catch (error) {
-            res.status(400).json({ error: error.message });
+            next(error);
         }
     }
 
-    async obtenerHistorialTurnos(req, res) {
+    async consultarDisponibilidad(req, res, next) {
+        const { medicoId } = req.params;
+        try {
+            const resultado = await this.turnoService.consultarDisponibilidad(medicoId, req.validatedQuery);
+            res.status(200).json(resultado);
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    async obtenerHistorialTurnos(req, res, next) {
         const { medicoId } = req.params;
         try {
             const turnos = await this.turnoService.historialPorMedico(medicoId);
             res.status(200).json(turnos);
         } catch (error) {
-            res.status(500).json({ error: error.message });
+            next(error);
         }
     }
 }

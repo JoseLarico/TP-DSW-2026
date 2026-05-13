@@ -1,5 +1,5 @@
-export const validarSchema = (schema) => (req, res, next) => {
-  const result = schema.safeParse(req.body);
+export const validarSchema = (schema, source = 'body') => (req, res, next) => {
+  const result = schema.safeParse(req[source]);
   if (!result.success) {
     const errors = result.error.issues.reduce((acc, issue) => {
       const key = issue.path.join('.');
@@ -10,6 +10,7 @@ export const validarSchema = (schema) => (req, res, next) => {
     }, {});
     return res.status(400).json({ error: errors });
   }
-  req.body = result.data;
+  const targetKey = source === 'query' ? 'validatedQuery' : `validated${source.charAt(0).toUpperCase() + source.slice(1)}`;
+  req[targetKey] = result.data;
   next();
 };

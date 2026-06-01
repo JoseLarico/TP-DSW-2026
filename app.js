@@ -1,4 +1,5 @@
 import express from "express";
+import cors from "cors";
 import swaggerUi from "swagger-ui-express";
 import { swaggerSpec } from "./src/config/swagger.js";
 import medicoRouter from "./src/routes/medico.router.js";
@@ -13,6 +14,7 @@ import sedeRouter from "./src/routes/sede.router.js";
 import { errorHandler } from "./src/middlewares/errorHandler.js";
 
 const app = express();
+app.use(cors({ origin: process.env.FRONTEND_URL || "http://localhost:3001" }));
 app.use(express.json());
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.use("/medicos", medicoRouter);

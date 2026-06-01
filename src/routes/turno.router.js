@@ -5,7 +5,7 @@ import {
   turnoSchema,
   solicitudCambioFechaPacienteSchema,
   solicitudCambioFechaMedicoSchema,
-  confirmarRechazarPacienteSchema,
+  respuestaSolicitudCambioFechaSchema,
 } from "../schemas/validation/turno.schema.js";
 import { busquedaTurnoSchema } from "../schemas/validation/busquedaTurno.schema.js";
 
@@ -14,9 +14,9 @@ const turnoController = new TurnoController();
 
 /**
  * @openapi
- * /turnos/buscar/{pacienteId}:
+ * /turnos/disponibles/{pacienteId}:
  *   get:
- *     summary: Buscar turnos disponibles con cobertura de obra social del paciente
+ *     summary: Turnos disponibles con cobertura de obra social del paciente
  *     tags: [Turnos]
  *     parameters:
  *       - in: path
@@ -80,7 +80,7 @@ const turnoController = new TurnoController();
  *       404:
  *         description: Paciente no encontrado
  */
-router.get("/buscar/:pacienteId",
+router.get("/disponibles/:pacienteId",
   validarSchema(busquedaTurnoSchema, 'query'),
   (req, res, next) => turnoController.buscarTurnosConCobertura(req, res, next)
 );
@@ -272,9 +272,9 @@ router.post("/:turnoId/solicitud-cambio-fecha/medico",
 
 /**
  * @openapi
- * /turnos/{turnoId}/solicitud-cambio-fecha/confirmar/paciente:
+ * /turnos/{turnoId}/solicitud-cambio-fecha/paciente:
  *   patch:
- *     summary: El paciente confirma la propuesta de cambio de fecha del médico
+ *     summary: El paciente responde la propuesta de cambio de fecha del médico
  *     tags: [Turnos]
  *     parameters:
  *       - in: path
@@ -288,65 +288,33 @@ router.post("/:turnoId/solicitud-cambio-fecha/medico",
  *         application/json:
  *           schema:
  *             type: object
- *             required: [pacienteId]
+ *             required: [pacienteId, estado]
  *             properties:
  *               pacienteId:
  *                 type: string
  *                 example: "664f1a2b3c4d5e6f7a8b9c0e"
+ *               estado:
+ *                 type: string
+ *                 enum: [confirmado, rechazado]
+ *                 example: "confirmado"
  *     responses:
  *       200:
- *         description: Cambio de fecha confirmado
+ *         description: Respuesta del paciente registrada
  *       400:
  *         description: No hay solicitud pendiente o error de validación
  *       404:
  *         description: Turno no encontrado
  */
-router.patch("/:turnoId/solicitud-cambio-fecha/confirmar/paciente",
-  validarSchema(confirmarRechazarPacienteSchema),
-  (req, res, next) => turnoController.confirmarCambioFechaPaciente(req, res, next)
+router.patch("/:turnoId/solicitud-cambio-fecha/paciente",
+  validarSchema(respuestaSolicitudCambioFechaSchema),
+  (req, res, next) => turnoController.responderSolicitudCambioFecha(req, res, next)
 );
 
 /**
  * @openapi
- * /turnos/{turnoId}/solicitud-cambio-fecha/rechazar/paciente:
+ * /turnos/{turnoId}/realizacion:
  *   patch:
- *     summary: El paciente rechaza la propuesta de cambio de fecha del médico
- *     tags: [Turnos]
- *     parameters:
- *       - in: path
- *         name: turnoId
- *         required: true
- *         schema:
- *           type: string
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required: [pacienteId]
- *             properties:
- *               pacienteId:
- *                 type: string
- *                 example: "664f1a2b3c4d5e6f7a8b9c0e"
- *     responses:
- *       200:
- *         description: Cambio de fecha rechazado
- *       400:
- *         description: No hay solicitud pendiente
- *       404:
- *         description: Turno no encontrado
- */
-router.patch("/:turnoId/solicitud-cambio-fecha/rechazar/paciente",
-  validarSchema(confirmarRechazarPacienteSchema),
-  (req, res, next) => turnoController.rechazarCambioFechaPaciente(req, res, next)
-);
-
-/**
- * @openapi
- * /turnos/{turnoId}/realizado:
- *   patch:
- *     summary: Marcar un turno como realizado (por el médico)
+ *     summary: Registrar la realización de un turno (por el médico)
  *     tags: [Turnos]
  *     parameters:
  *       - in: path
@@ -356,12 +324,12 @@ router.patch("/:turnoId/solicitud-cambio-fecha/rechazar/paciente",
  *           type: string
  *     responses:
  *       200:
- *         description: Turno marcado como realizado
+ *         description: Turno registrado como realizado
  *       400:
- *         description: Solo se puede marcar como realizado un turno reservado
+ *         description: Solo se puede registrar como realizado un turno reservado
  *       404:
  *         description: Turno no encontrado
  */
-router.patch("/:turnoId/realizado", (req, res, next) => turnoController.marcarRealizado(req, res, next));
+router.patch("/:turnoId/realizacion", (req, res, next) => turnoController.marcarRealizado(req, res, next));
 
 export default router;

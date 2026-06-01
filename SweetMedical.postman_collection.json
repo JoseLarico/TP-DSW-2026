@@ -1339,7 +1339,7 @@
           }
         },
         {
-          "name": "Confirmar Cambio de Fecha (Paciente)",
+          "name": "Respuesta Solicitud Cambio de Fecha (Paciente)",
           "request": {
             "method": "PATCH",
             "header": [
@@ -1349,7 +1349,7 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/turnos/:turnoId/solicitud-cambio-fecha/confirmar/paciente",
+              "raw": "{{baseUrl}}/turnos/:turnoId/solicitud-cambio-fecha/paciente",
               "host": [
                 "{{baseUrl}}"
               ],
@@ -1357,7 +1357,6 @@
                 "turnos",
                 ":turnoId",
                 "solicitud-cambio-fecha",
-                "confirmar",
                 "paciente"
               ],
               "variable": [
@@ -1369,7 +1368,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"pacienteId\": \"<_id del paciente>\"\n}",
+              "raw": "{\n    \"pacienteId\": \"<_id del paciente>\",\n    \"estado\": \"confirmado\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -1379,54 +1378,14 @@
           }
         },
         {
-          "name": "Rechazar Cambio de Fecha (Paciente)",
-          "request": {
-            "method": "PATCH",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/turnos/:turnoId/solicitud-cambio-fecha/rechazar/paciente",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "turnos",
-                ":turnoId",
-                "solicitud-cambio-fecha",
-                "rechazar",
-                "paciente"
-              ],
-              "variable": [
-                {
-                  "key": "turnoId",
-                  "value": "<_id del turno>"
-                }
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"pacienteId\": \"<_id del paciente>\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            }
-          }
-        },
-        {
-          "name": "Marcar Turno como Realizado",
+          "name": "Registrar Realización de Turno",
           "request": {
             "method": "PATCH",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/turnos/:turnoId/realizado",
+              "raw": "{{baseUrl}}/turnos/:turnoId/realizacion",
               "host": ["{{baseUrl}}"],
-              "path": ["turnos", ":turnoId", "realizado"],
+              "path": ["turnos", ":turnoId", "realizacion"],
               "variable": [
                 {
                   "key": "turnoId",
@@ -1437,18 +1396,18 @@
           }
         },
         {
-          "name": "Buscar Turnos Disponibles",
+          "name": "Turnos Disponibles",
           "request": {
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/turnos/buscar/:pacienteId?especialidadId=<_id>&fechaDesde=2026-05-10&fechaHasta=2026-06-10&sortBy=fechaHora&sortOrder=asc&page=1&limit=10",
+              "raw": "{{baseUrl}}/turnos/disponibles/:pacienteId?especialidadId=<_id>&fechaDesde=2026-05-10&fechaHasta=2026-06-10&sortBy=fechaHora&sortOrder=asc&page=1&limit=10",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "turnos",
-                "buscar",
+                "disponibles",
                 ":pacienteId"
               ],
               "variable": [

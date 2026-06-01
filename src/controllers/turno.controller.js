@@ -64,22 +64,13 @@ export class TurnoController {
         }
     }
 
-    async confirmarCambioFechaPaciente(req, res, next) {
+    async responderSolicitudCambioFecha(req, res, next) {
         const { turnoId } = req.params;
-        const { pacienteId } = req.validatedBody;
+        const { pacienteId, estado } = req.validatedBody;
         try {
-            const turno = await this.turnoService.confirmarCambioFechaPaciente(turnoId, pacienteId);
-            res.status(200).json({ turno });
-        } catch (error) {
-            next(error);
-        }
-    }
-
-    async rechazarCambioFechaPaciente(req, res, next) {
-        const { turnoId } = req.params;
-        const { pacienteId } = req.validatedBody;
-        try {
-            const turno = await this.turnoService.rechazarCambioFechaPaciente(turnoId, pacienteId);
+            const turno = estado === "confirmado"
+                ? await this.turnoService.confirmarCambioFechaPaciente(turnoId, pacienteId)
+                : await this.turnoService.rechazarCambioFechaPaciente(turnoId, pacienteId);
             res.status(200).json({ turno });
         } catch (error) {
             next(error);

@@ -14,6 +14,7 @@ export const solicitudCambioFechaMedicoSchema = z.object({
   nuevoTurnoId: z.string().min(1),
 });
 
-export const confirmarRechazarPacienteSchema = z.object({
+export const respuestaSolicitudCambioFechaSchema = z.object({
   pacienteId: z.string().min(1),
+  estado: z.enum(["confirmado", "rechazado"]),
 });

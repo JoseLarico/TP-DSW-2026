@@ -5,6 +5,11 @@ export const turnoSchema = z.object({
   pacienteId: z.string().min(1),
 });
 
+export const reservaMultipleSchema = z.object({
+  turnoIds: z.array(z.string().min(1)).min(1),
+  pacienteId: z.string().min(1),
+});
+
 export const solicitudCambioFechaPacienteSchema = z.object({
   pacienteId: z.string().min(1),
   nuevoTurnoId: z.string().min(1),

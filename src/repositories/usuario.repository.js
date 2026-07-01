@@ -1,3 +1,4 @@
+import bcrypt from 'bcryptjs';
 import UsuarioModel from '../models/mongoose/usuario.model.js';
 
 export class UsuarioRepository {
@@ -12,7 +13,8 @@ export class UsuarioRepository {
     }
 
     async save(usuario) {
-        const nuevoUsuario = new UsuarioModel(usuario);
+        const hashed = await bcrypt.hash(usuario.password, 10);
+        const nuevoUsuario = new UsuarioModel({ ...usuario, password: hashed });
         return await nuevoUsuario.save();
     }
 

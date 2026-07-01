@@ -32,7 +32,7 @@ export class ObraSocialRepository {
     }
 
     async update(id, datos) {
-        return await ObraSocialModel.findByIdAndUpdate(id, datos, { returnDocument: 'after' })
+        return await ObraSocialModel.findByIdAndUpdate(id, datos, { returnDocument: 'after', runValidators: true })
             .populate('planes.coberturasEspecialidad.especialidad')
             .populate('planes.coberturasPractica.practica');
     }

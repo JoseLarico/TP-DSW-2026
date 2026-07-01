@@ -32,6 +32,14 @@ export class TurnoRepository {
             .populate(POPULATE_TURNO);
     }
 
+    async saveFechaAndClearSolicitud(turnoId, fechaHora) {
+        return await TurnoModel.findByIdAndUpdate(
+            turnoId,
+            { $set: { fechaHora }, $unset: { solicitudCambioFecha: '' } },
+            { returnDocument: 'after' }
+        ).populate(POPULATE_TURNO);
+    }
+
     async findByMedicoAndFechaHora(medicoId, fechaHora) {
         return await TurnoModel.findOne({
             medico: medicoId,

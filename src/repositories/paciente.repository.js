@@ -53,6 +53,14 @@ export class PacienteRepository {
         return await PacienteModel.findOne({ dni });
     }
 
+    async findByUsuarioId(usuarioId) {
+        const paciente = await PacienteModel.findOne({ usuario: usuarioId })
+            .populate('usuario', '-password')
+            .populate('obraSocial');
+        if (!paciente) return null;
+        return this.#resolvePlan(paciente);
+    }
+
     async deleteById(id) {
         return await PacienteModel.findByIdAndDelete(id);
     }

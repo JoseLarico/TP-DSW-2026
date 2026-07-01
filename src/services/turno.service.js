@@ -19,6 +19,14 @@ import { Turno } from "../models/turno.model.js";
 import { ValidationError, ConflictError } from "../error/appError.js";
 import dayjs from "dayjs";
 
+const fmtAR = (date) => {
+    const d = new Date(date);
+    const opts = { timeZone: 'America/Argentina/Buenos_Aires' };
+    const fecha = d.toLocaleDateString('es-AR', { ...opts, day: '2-digit', month: '2-digit', year: 'numeric' });
+    const hora  = d.toLocaleTimeString('es-AR', { ...opts, hour: '2-digit', minute: '2-digit', hour12: false });
+    return `${fecha} ${hora}`;
+};
+
 export class TurnoService {
     constructor({
         turnoRepository = TurnoRepository.instance(),
@@ -81,7 +89,27 @@ export class TurnoService {
 
         const turnoGuardado = await this.turnoRepository.save(turno);
         await this.turnoRepository.deleteDisponiblesByMedicoAndFechaHora(turno.medico, turno.fechaHora);
+
+        await this.notificacionRepository.create({
+            destinatario: await this.#usuarioIdDeMedico(turno.medico),
+            remitente: await this.#usuarioIdDePaciente(pacienteId),
+            mensaje: `El paciente reservó el turno del ${fmtAR(turno.fechaHora)}`,
+            fechaHoraCreacion: new Date()
+        });
+
         return turnoGuardado;
+    }
+
+    async altaMultipleTurnos(turnoIds, pacienteId) {
+        const resultados = await Promise.allSettled(
+            turnoIds.map(turnoId => this.altaTurno(turnoId, pacienteId))
+        );
+
+        return turnoIds.map((turnoId, i) => {
+            const r = resultados[i];
+            if (r.status === 'fulfilled') return { turnoId, ok: true, turno: r.value };
+            return { turnoId, ok: false, error: r.reason.message };
+        });
     }
 
     async cambiarFechaPaciente(turnoId, pacienteId, nuevoTurnoId) {
@@ -96,14 +124,25 @@ export class TurnoService {
 
         const medico = await this.medicoRepository.findById(turno.medico);
         const fechaOriginal = turno.fechaHora;
-        turno.fechaHora = turnoNuevo.fechaHora;
-        const turnoActualizado = await this.turnoRepository.save(turno);
+        const turnoActualizado = await this.turnoRepository.saveFechaAndClearSolicitud(turnoId, turnoNuevo.fechaHora);
         await this.turnoRepository.deleteDisponiblesByMedicoAndFechaHora(turno.medico, turnoNuevo.fechaHora);
+
+        // Restaurar el slot original como disponible
+        await this.turnoRepository.create({
+            medico: turno.medico,
+            fechaHora: fechaOriginal,
+            sede: turno.sede,
+            especialidad: turno.especialidad,
+            practica: turno.practica,
+            costo: turno.costo,
+            estado: EstadoTurno.DISPONIBLE,
+            historialEstados: [{ fechaHoraIngreso: new Date(), estado: EstadoTurno.DISPONIBLE }]
+        });
 
         await this.notificacionRepository.create({
             destinatario: medico.usuario._id,
             remitente: await this.#usuarioIdDePaciente(turno.paciente),
-            mensaje: `El paciente cambió el turno del ${dayjs(fechaOriginal).format("DD/MM/YYYY HH:mm")} al ${dayjs(turnoNuevo.fechaHora).format("DD/MM/YYYY HH:mm")}`,
+            mensaje: `El paciente cambió el turno del ${fmtAR(fechaOriginal)} al ${fmtAR(turnoNuevo.fechaHora)}`,
             fechaHoraCreacion: new Date()
         });
 
@@ -113,7 +152,7 @@ export class TurnoService {
     async proponerCambioFechaMedico(turnoId, nuevoTurnoId) {
         const turno = await this.turnoRepository.findById(turnoId);
         if (turno.estado !== EstadoTurno.RESERVADO) throw new ValidationError("Solo se puede solicitar cambio en turnos reservados");
-        if (turno.solicitudCambioFecha?.estado === EstadoSolicitudCambio.PENDIENTE) throw new ConflictError("Ya existe una solicitud de cambio pendiente");
+        if (turno.solicitudCambioFecha?.estado === EstadoSolicitudCambio.PENDIENTE) throw new ValidationError("Ya existe una solicitud de cambio pendiente");
 
         const turnoNuevo = await this.turnoRepository.findById(nuevoTurnoId);
         if (turnoNuevo.estado !== EstadoTurno.DISPONIBLE) throw new ValidationError("El turno seleccionado no está disponible");
@@ -130,7 +169,7 @@ export class TurnoService {
         await this.notificacionRepository.create({
             destinatario: await this.#usuarioIdDePaciente(turno.paciente),
             remitente: medico.usuario._id,
-            mensaje: `El médico propone cambiar el turno del ${dayjs(turno.fechaHora).format("DD/MM/YYYY HH:mm")} al ${dayjs(turnoNuevo.fechaHora).format("DD/MM/YYYY HH:mm")}`,
+            mensaje: `El médico propone cambiar el turno del ${fmtAR(turno.fechaHora)} al ${fmtAR(turnoNuevo.fechaHora)}`,
             fechaHoraCreacion: new Date()
         });
 
@@ -158,10 +197,22 @@ export class TurnoService {
         const turnoActualizado = await this.turnoRepository.save(turno);
         await this.turnoRepository.deleteDisponiblesByMedicoAndFechaHora(turno.medico, nuevaFechaHora);
 
+        // Restaurar el slot original como disponible
+        await this.turnoRepository.create({
+            medico: turno.medico,
+            fechaHora: fechaOriginal,
+            sede: turno.sede,
+            especialidad: turno.especialidad,
+            practica: turno.practica,
+            costo: turno.costo,
+            estado: EstadoTurno.DISPONIBLE,
+            historialEstados: [{ fechaHoraIngreso: new Date(), estado: EstadoTurno.DISPONIBLE }]
+        });
+
         await this.notificacionRepository.create({
             destinatario: medico.usuario._id,
             remitente: await this.#usuarioIdDePaciente(turno.paciente),
-            mensaje: `El paciente confirmó el cambio de fecha del turno del ${dayjs(fechaOriginal).format("DD/MM/YYYY HH:mm")} al ${nuevaFecha.format("DD/MM/YYYY HH:mm")}`,
+            mensaje: `El paciente confirmó el cambio de fecha del turno del ${fmtAR(fechaOriginal)} al ${fmtAR(nuevaFecha.toDate())}`,
             fechaHoraCreacion: new Date()
         });
 
@@ -182,7 +233,7 @@ export class TurnoService {
         await this.notificacionRepository.create({
             destinatario: await this.#usuarioIdDeMedico(turno.medico),
             remitente: await this.#usuarioIdDePaciente(turno.paciente),
-            mensaje: `El paciente rechazó la propuesta de cambio de fecha del turno del ${dayjs(turno.fechaHora).format("DD/MM/YYYY HH:mm")}`,
+            mensaje: `El paciente rechazó la propuesta de cambio de fecha del turno del ${fmtAR(turno.fechaHora)}`,
             fechaHoraCreacion: new Date()
         });
 
@@ -223,7 +274,7 @@ export class TurnoService {
         await this.notificacionRepository.create({
             destinatario: await this.#usuarioIdDeMedico(turno.medico),
             remitente: await this.#usuarioIdDePaciente(pacienteId),
-            mensaje: `El paciente canceló el turno del ${dayjs(turno.fechaHora).format("DD/MM/YYYY HH:mm")}. Motivo: ${motivo ?? "sin motivo"}`,
+            mensaje: `El paciente canceló el turno del ${fmtAR(turno.fechaHora)}. Motivo: ${motivo ?? "sin motivo"}`,
             fechaHoraCreacion: new Date()
         });
         return turno;
@@ -236,7 +287,7 @@ export class TurnoService {
         await this.notificacionRepository.create({
             destinatario: await this.#usuarioIdDePaciente(turno.paciente),
             remitente: await this.#usuarioIdDeMedico(medicoId),
-            mensaje: `El médico canceló el turno del ${dayjs(turno.fechaHora).format("DD/MM/YYYY HH:mm")}. Motivo: ${motivo ?? "sin motivo"}`,
+            mensaje: `El médico canceló el turno del ${fmtAR(turno.fechaHora)}. Motivo: ${motivo ?? "sin motivo"}`,
             fechaHoraCreacion: new Date()
         });
         return turno;

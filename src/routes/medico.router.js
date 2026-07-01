@@ -3,6 +3,7 @@ import { MedicoController } from "../controllers/medico.controller.js";
 import { validarSchema } from "../middlewares/validarCampos.middleware.js";
 import { agendaSchema } from "../schemas/validation/agenda.schema.js";
 import { disponibilidadMedicoSchema } from "../schemas/validation/disponibilidadMedico.schema.js";
+import { verifyToken } from "../middlewares/verifyToken.middleware.js";
 
 const router = express.Router();
 const medicoController = new MedicoController();
@@ -394,7 +395,7 @@ router.delete("/:medicoId/sedes/:sedeId", (req, res, next) =>
  *       404:
  *         description: Médico no encontrado
  */
-router.get("/:medicoId/turnos", (req, res, next) =>
+router.get("/:medicoId/turnos", verifyToken, (req, res, next) =>
   medicoController.obtenerHistorialTurnos(req, res, next)
 );
 

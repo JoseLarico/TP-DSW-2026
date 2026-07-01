@@ -61,6 +61,14 @@ export class MedicoRepository {
         return await MedicoModel.findOne({ matricula });
     }
 
+    async findByUsuarioId(usuarioId) {
+        return await MedicoModel.findOne({ usuario: usuarioId })
+            .populate('usuario', '-password')
+            .populate('especialidades')
+            .populate('practicas')
+            .populate('sedes');
+    }
+
     async deleteById(id) {
         return await MedicoModel.findByIdAndDelete(id);
     }

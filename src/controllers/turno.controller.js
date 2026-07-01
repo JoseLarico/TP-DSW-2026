@@ -20,6 +20,17 @@ export class TurnoController {
         }
     }
 
+    async altaMultipleTurnos(req, res, next) {
+        const { turnoIds, pacienteId } = req.validatedBody;
+        try {
+            const resultados = await this.turnoService.altaMultipleTurnos(turnoIds, pacienteId);
+            const reservados = resultados.filter(r => r.ok).length;
+            res.status(207).json({ resultados, reservados, fallidos: resultados.length - reservados });
+        } catch (error) {
+            next(error);
+        }
+    }
+
     async cancelarPorPaciente(req, res, next) {
         const { turnoId } = req.params;
         const { pacienteId, motivo } = req.body ?? {};

@@ -11,6 +11,7 @@ import especialidadRouter from "./src/routes/especialidad.router.js";
 import practicaRouter from "./src/routes/practica.router.js";
 import obraSocialRouter from "./src/routes/obraSocial.router.js";
 import sedeRouter from "./src/routes/sede.router.js";
+import authRouter from "./src/routes/auth.router.js";
 import { errorHandler } from "./src/middlewares/errorHandler.js";
 
 const app = express();
@@ -26,6 +27,7 @@ app.use("/especialidades", especialidadRouter);
 app.use("/practicas", practicaRouter);
 app.use("/obras-sociales", obraSocialRouter);
 app.use("/sedes", sedeRouter);
+app.use("/auth", authRouter);
 
 app.use((req, res) => {
     res.status(404).json({ status: 'fail', message: 'La ruta solicitada no existe' });

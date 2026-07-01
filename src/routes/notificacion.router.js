@@ -1,5 +1,6 @@
 import express from "express";
 import {NotificacionController} from "../controllers/notificacion.controller.js"
+import { verifyToken } from "../middlewares/verifyToken.middleware.js";
 
 const router = express.Router();
 const notificacionController = new NotificacionController();
@@ -22,7 +23,7 @@ const notificacionController = new NotificacionController();
  *       400:
  *         description: usuarioId requerido
  */
-router.get("/sin-leer/:usuarioId", (req, res, next) =>
+router.get("/sin-leer/:usuarioId", verifyToken, (req, res, next) =>
     notificacionController.obtenerSinLeer(req, res, next)
 );
 
@@ -44,7 +45,7 @@ router.get("/sin-leer/:usuarioId", (req, res, next) =>
  *       400:
  *         description: usuarioId requerido
  */
-router.get("/leidas/:usuarioId", (req, res, next) =>
+router.get("/leidas/:usuarioId", verifyToken, (req, res, next) =>
     notificacionController.obtenerLeidas(req, res, next)
 );
 
@@ -66,7 +67,7 @@ router.get("/leidas/:usuarioId", (req, res, next) =>
  *       404:
  *         description: Notificación no encontrada
  */
-router.patch("/:notificacionId/marcar-leida", (req, res, next) =>
+router.patch("/:notificacionId/marcar-leida", verifyToken, (req, res, next) =>
     notificacionController.marcarComoLeida(req, res, next)
 );
 

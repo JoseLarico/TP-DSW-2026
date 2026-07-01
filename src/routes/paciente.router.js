@@ -1,5 +1,6 @@
 import express from 'express';
 import { PacienteController } from '../controllers/paciente.controller.js';
+import { verifyToken } from '../middlewares/verifyToken.middleware.js';
 
 const router = express.Router();
 const pacienteController = new PacienteController();
@@ -124,10 +125,10 @@ router.post('/', (req, res, next) =>
 router.get('/:pacienteId', (req, res, next) =>
     pacienteController.obtenerPorId(req, res, next)
 );
-router.patch('/:pacienteId', (req, res, next) =>
+router.patch('/:pacienteId', verifyToken, (req, res, next) =>
     pacienteController.actualizar(req, res, next)
 );
-router.delete('/:pacienteId', (req, res, next) =>
+router.delete('/:pacienteId', verifyToken, (req, res, next) =>
     pacienteController.eliminar(req, res, next)
 );
 
@@ -155,7 +156,7 @@ router.delete('/:pacienteId', (req, res, next) =>
  *       404:
  *         description: Paciente no encontrado
  */
-router.get('/:pacienteId/turnos', (req, res, next) =>
+router.get('/:pacienteId/turnos', verifyToken, (req, res, next) =>
     pacienteController.obtenerHistorialTurnos(req, res, next)
 );
 

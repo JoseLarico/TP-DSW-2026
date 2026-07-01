@@ -2,8 +2,8 @@ import 'dotenv/config';
 import app from './app.js';
 import { connectDB } from './src/config/db.js';
 
-const PORT = 3000;
-const HOST = 'localhost';
+const PORT = process.env.PORT || 3000;
+const HOST = process.env.HOST || '0.0.0.0';
 
 connectDB()
   .then(() => {

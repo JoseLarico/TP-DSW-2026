@@ -49,7 +49,9 @@ describe("Turno Service", () => {
             turnoService.turnoRepository.findById = jest.fn().mockResolvedValue(turnoDisponible);
             turnoService.turnoRepository.save = jest.fn().mockImplementation(t => Promise.resolve(t));
             turnoService.turnoRepository.deleteDisponiblesByMedicoAndFechaHora = jest.fn().mockResolvedValue();
-            turnoService.pacienteRepository.findById = jest.fn().mockResolvedValue({ _id: "pacienteId" });
+            turnoService.pacienteRepository.findById = jest.fn().mockResolvedValue({ _id: "pacienteId", usuario: { _id: "usuarioPacienteId" } });
+            turnoService.medicoRepository.findById = jest.fn().mockResolvedValue({ usuario: { _id: "usuarioMedicoId" } });
+            turnoService.notificacionRepository.create = jest.fn().mockResolvedValue({});
             const resultado = await turnoService.altaTurno("turnoId", "pacienteId");
             expect(resultado.estado).toBe(EstadoTurno.RESERVADO);
             expect(resultado.paciente).toBe("pacienteId");
@@ -112,6 +114,8 @@ describe("Turno Service", () => {
                 .mockResolvedValueOnce(turno)
                 .mockResolvedValueOnce(turnoNuevo);
             turnoService.turnoRepository.save = jest.fn().mockImplementation(t => Promise.resolve(t));
+            turnoService.turnoRepository.saveFechaAndClearSolicitud = jest.fn().mockImplementation((turnoId, fechaHora) => Promise.resolve({ _id: turnoId, fechaHora }));
+            turnoService.turnoRepository.create = jest.fn().mockImplementation(t => Promise.resolve(t));
             turnoService.turnoRepository.deleteDisponiblesByMedicoAndFechaHora = jest.fn().mockResolvedValue();
             turnoService.medicoRepository.findById = jest.fn().mockResolvedValue({ usuario: { _id: "usuarioMedicoId" } });
             turnoService.pacienteRepository.findById = jest.fn().mockResolvedValue({ usuario: { _id: "usuarioPacienteId" } });

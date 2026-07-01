@@ -3,11 +3,13 @@ import { TurnoController } from "../controllers/turno.controller.js";
 import { validarSchema } from "../middlewares/validarCampos.middleware.js";
 import {
   turnoSchema,
+  reservaMultipleSchema,
   solicitudCambioFechaPacienteSchema,
   solicitudCambioFechaMedicoSchema,
   respuestaSolicitudCambioFechaSchema,
 } from "../schemas/validation/turno.schema.js";
 import { busquedaTurnoSchema } from "../schemas/validation/busquedaTurno.schema.js";
+import { verifyToken } from "../middlewares/verifyToken.middleware.js";
 
 const router = express.Router();
 const turnoController = new TurnoController();
@@ -81,8 +83,74 @@ const turnoController = new TurnoController();
  *         description: Paciente no encontrado
  */
 router.get("/disponibles/:pacienteId",
+  verifyToken,
   validarSchema(busquedaTurnoSchema, 'query'),
   (req, res, next) => turnoController.buscarTurnosConCobertura(req, res, next)
+);
+
+/**
+ * @openapi
+ * /turnos/reservar-multiple:
+ *   post:
+ *     summary: Reservar múltiples turnos del carrito de preselección
+ *     description: Intenta reservar cada turno de la lista. Devuelve resultado individual por turno (éxito o error). Usa HTTP 207 Multi-Status.
+ *     tags: [Turnos]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [turnoIds, pacienteId]
+ *             properties:
+ *               turnoIds:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                 minItems: 1
+ *                 description: Lista de IDs de turnos disponibles a reservar
+ *                 example: ["664f1a2b3c4d5e6f7a8b9c0d", "664f1a2b3c4d5e6f7a8b9c0e"]
+ *               pacienteId:
+ *                 type: string
+ *                 example: "664f1a2b3c4d5e6f7a8b9c0f"
+ *     responses:
+ *       207:
+ *         description: Resultado por turno (algunos pueden haber fallado)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 reservados:
+ *                   type: integer
+ *                   description: Cantidad de turnos reservados exitosamente
+ *                 fallidos:
+ *                   type: integer
+ *                   description: Cantidad de turnos que fallaron
+ *                 resultados:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       turnoId:
+ *                         type: string
+ *                       ok:
+ *                         type: boolean
+ *                       turno:
+ *                         type: object
+ *                         description: Presente solo si ok es true
+ *                       error:
+ *                         type: string
+ *                         description: Presente solo si ok es false
+ *       400:
+ *         description: Error de validación del body
+ *       404:
+ *         description: Paciente no encontrado
+ */
+router.post("/reservar-multiple",
+  verifyToken,
+  validarSchema(reservaMultipleSchema),
+  (req, res, next) => turnoController.altaMultipleTurnos(req, res, next)
 );
 
 /**
@@ -115,6 +183,7 @@ router.get("/disponibles/:pacienteId",
  *         description: Turno o paciente no encontrado
  */
 router.post("/",
+  verifyToken,
   validarSchema(turnoSchema),
   (req, res, next) => turnoController.altaTurno(req, res, next)
 );
@@ -153,7 +222,7 @@ router.post("/",
  *       404:
  *         description: Turno no encontrado
  */
-router.delete("/:turnoId/paciente", (req, res, next) => turnoController.cancelarPorPaciente(req, res, next));
+router.delete("/:turnoId/paciente", verifyToken, (req, res, next) => turnoController.cancelarPorPaciente(req, res, next));
 
 /**
  * @openapi
@@ -189,7 +258,7 @@ router.delete("/:turnoId/paciente", (req, res, next) => turnoController.cancelar
  *       404:
  *         description: Turno no encontrado
  */
-router.delete("/:turnoId/medico", (req, res, next) => turnoController.cancelarPorMedico(req, res, next));
+router.delete("/:turnoId/medico", verifyToken, (req, res, next) => turnoController.cancelarPorMedico(req, res, next));
 
 /**
  * @openapi
@@ -227,6 +296,7 @@ router.delete("/:turnoId/medico", (req, res, next) => turnoController.cancelarPo
  *         description: Turno no encontrado
  */
 router.patch("/:turnoId/cambio-fecha/paciente",
+  verifyToken,
   validarSchema(solicitudCambioFechaPacienteSchema),
   (req, res, next) => turnoController.cambiarFechaPaciente(req, res, next)
 );
@@ -266,9 +336,11 @@ router.patch("/:turnoId/cambio-fecha/paciente",
  *         description: Ya existe una solicitud de cambio pendiente
  */
 router.post("/:turnoId/solicitud-cambio-fecha/medico",
+  verifyToken,
   validarSchema(solicitudCambioFechaMedicoSchema),
   (req, res, next) => turnoController.proponerCambioFechaMedico(req, res, next)
 );
+
 
 /**
  * @openapi
@@ -306,6 +378,7 @@ router.post("/:turnoId/solicitud-cambio-fecha/medico",
  *         description: Turno no encontrado
  */
 router.patch("/:turnoId/solicitud-cambio-fecha/paciente",
+  verifyToken,
   validarSchema(respuestaSolicitudCambioFechaSchema),
   (req, res, next) => turnoController.responderSolicitudCambioFecha(req, res, next)
 );
@@ -330,6 +403,6 @@ router.patch("/:turnoId/solicitud-cambio-fecha/paciente",
  *       404:
  *         description: Turno no encontrado
  */
-router.patch("/:turnoId/realizacion", (req, res, next) => turnoController.marcarRealizado(req, res, next));
+router.patch("/:turnoId/realizacion", verifyToken, (req, res, next) => turnoController.marcarRealizado(req, res, next));
 
 export default router;

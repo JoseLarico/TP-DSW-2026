@@ -71,11 +71,11 @@ export class BusquedaTurnoService {
 
         if (practicaId && plan.coberturasPractica) {
             const cob = plan.coberturasPractica.find(c => c.practica?.toString() === practicaId);
-            if (cob) return { nivel: cob.nivel, porcentaje: cob.porcentaje ?? 0 };
+            if (cob) return { nivel: cob.nivel.toLowerCase(), porcentaje: cob.porcentaje ?? 0 };
         }
         if (especialidadId && plan.coberturasEspecialidad) {
             const cob = plan.coberturasEspecialidad.find(c => c.especialidad?.toString() === especialidadId);
-            if (cob) return { nivel: cob.nivel, porcentaje: cob.porcentaje ?? 0 };
+            if (cob) return { nivel: cob.nivel.toLowerCase(), porcentaje: cob.porcentaje ?? 0 };
         }
         return { nivel: nivelCobertura.NO_CUBIERTA, porcentaje: 0 };
     }

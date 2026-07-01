@@ -1,10 +1,16 @@
 import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc.js';
+import timezone from 'dayjs/plugin/timezone.js';
 import { TurnoRepository } from '../repositories/turno.repository.js';
 import { Turno } from '../models/turno.model.js';
 import { EstadoTurno } from '../enums/estadoTurno.enum.js';
 import { DisponibilidadHoraria } from '../models/disponibilidadHoraria.model.js';
 import { ConflictError } from '../error/appError.js';
 
+dayjs.extend(utc);
+dayjs.extend(timezone);
+
+const TZ = 'America/Argentina/Buenos_Aires';
 const DIAS_SEMANA = ['DOMINGO', 'LUNES', 'MARTES', 'MIERCOLES', 'JUEVES', 'VIERNES', 'SABADO'];
 const HORIZONTE_DIAS = 30;
 
@@ -51,11 +57,14 @@ export class Agenda {
 
     #generarSlots(disponibilidad, duracionMins) {
         const slots = [];
-        const ahora = dayjs();
+        const ahora = dayjs().tz(TZ);
         const horizonte = disponibilidad.fechaFin
-            ? dayjs(disponibilidad.fechaFin).endOf('day')
+            ? dayjs(disponibilidad.fechaFin).tz(TZ).endOf('day')
             : ahora.add(HORIZONTE_DIAS, 'day').endOf('day');
-        let fecha = ahora.startOf('day');
+        const inicio = disponibilidad.fechaInicio
+            ? dayjs(disponibilidad.fechaInicio).tz(TZ).startOf('day')
+            : ahora.startOf('day');
+        let fecha = inicio.isBefore(ahora) ? ahora.startOf('day') : inicio;
 
         while (fecha.valueOf() <= horizonte.valueOf()) {
             if (DIAS_SEMANA[fecha.day()] === disponibilidad.diaSemana) {

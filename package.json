@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "start": "node server.js",
-    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js test/**/*.test.js"
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js test/**/*.test.js",
+    "test:integration": "node --experimental-vm-modules node_modules/jest/bin/jest.js test/health.integration.test.js"
   },
   "repository": {
     "type": "git",
@@ -20,10 +21,12 @@
   },
   "homepage": "https://github.com/ddsw-mn/2026-1c-backend-grupo-16#readme",
   "dependencies": {
+    "bcryptjs": "^3.0.3",
     "cors": "^2.8.6",
     "dayjs": "^1.11.20",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
+    "jsonwebtoken": "^9.0.3",
     "mongoose": "^9.6.1",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.1",
@@ -31,6 +34,7 @@
   },
   "devDependencies": {
     "@jest/globals": "^30.3.0",
-    "jest": "^30.3.0"
+    "jest": "^30.3.0",
+    "supertest": "^7.2.2"
   }
 }
